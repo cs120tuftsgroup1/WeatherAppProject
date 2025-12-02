@@ -1,0 +1,22 @@
+html, body {
+Margin: 0;
+Padding: 0;
+height:100%;
+}
+body{
+    display:flex;
+    flex-direction: column;
+}
+footer{
+
+    margin-top:auto;
+}
+.footer-container
+{
+    display: inline-block;
+    width:100%;
+    background-color:#274C77;
+    color:#ffff;
+    padding-left: 10px;
+
+}
