@@ -1,7 +1,7 @@
 //File to hold database endpoints
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://ngasto01_db_user:<db_password>@weatherappcluster.bzidb06.mongodb.net/?appName=weatherAppCluster";
+const uri = "mongodb+srv://ngasto01_db_user:test123@weatherappcluster.bzidb06.mongodb.net/?appName=weatherAppCluster";
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
