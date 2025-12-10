@@ -1,0 +1,17 @@
+{
+  "name": "TruSky",
+  "version": "1.0.0",
+  "description": "An app to allow for users to customize settings to culltivate their weather expierence",
+  "main": "webApp.js",
+  "scripts": {
+    "start": "node webApp.js"
+  },
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "csv-parser": "^3.0.0",
+    "mongodb": "^6.5.0",
+    "qs": "^6.11.0"
+  }
+}
