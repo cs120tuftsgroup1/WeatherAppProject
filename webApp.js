@@ -57,6 +57,22 @@ const server = http.createServer(function (req, res) {
         res.end(accountView);
     });
   }
+  else if (path == "/sportsEvents")
+  {
+    file= __dirname + "/sportsEvents.html";
+    fs.readFile(file, function(err, sportsEventsView) {
+    
+        // Error reading file
+        if (err) {
+            res.writeHead(404, { "Content-Type": "text/plain" });
+            return res.end("Sports Events page not found");
+        }
+
+        // Add file to the response
+        res.writeHead(200, {'Content-Type': 'text/html'});
+        res.end(sportsEventsView);
+    });
+  }
   // Request wants to load the favicon
   else if(path === "/favicon.ico") {
     res.writeHead(204);
