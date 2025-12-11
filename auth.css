@@ -1,0 +1,53 @@
+:root {
+  --blue: #4BB3FD;
+  --navy: #274C77;
+  --mint: #E5F9E0;
+  --lightgreen: #A3F7B5;
+  --teal: #40C9A2;
+}
+
+.auth-container {
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 30px;
+  background: var(--mint);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+.auth-container h1 {
+  color: var(--navy);
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.auth-form input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--teal);
+  font-size: 1rem;
+}
+
+.auth-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.auth-btn:hover {
+  background: var(--navy);
+}
+
+a {
+  color: var(--teal);
+  font-weight: 600;
+}
