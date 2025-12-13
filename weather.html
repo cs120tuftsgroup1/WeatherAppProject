@@ -1,0 +1,87 @@
+<<<<<<< HEAD
+=======
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+   <link rel="stylesheet" href="style.css">
+  <title>Weather by City</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #99c6ed;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+      font-size: 50px;
+    }
+
+    #weather {
+      margin-top: 20px;
+      font-size: 25px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Weather by City</h1>
+
+  <input type="text" id="city" placeholder="Enter city">
+  <button onclick="getWeather()">Get Weather</button>
+  <div id="weather"></div>
+
+  <script>
+    function getWeather() {
+      const city = document.getElementById('city').value.trim();
+
+      if (!city) {
+        alert("Please enter a city.");
+        return;
+      }
+
+      const geoLocation = `https://geocoding-api.open-meteo.com/v1/search?name=${city}`;
+
+      fetch(geoLocation)
+        .then(response => response.json())
+        .then(geoLocationData => {
+          if (!geoLocationData.results || geoLocationData.results.length === 0) {
+            document.getElementById('weather').innerText = "Location not found.";
+            return;
+          }
+
+          const latitude = geoLocationData.results[0].latitude;
+          const longitude = geoLocationData.results[0].longitude;
+
+          const currentWeather = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
+
+          return fetch(currentWeather);
+        })
+        .then(response => response.json())
+        .then(weatherData => {
+          if (!weatherData || !weatherData.current_weather) return;
+
+          const temp = (weatherData.current_weather.temperature * 9 / 5 + 32).toFixed(2); // Convert to Fahrenheit
+          const wind = weatherData.current_weather.windspeed;
+          console.log(weatherData);
+          document.getElementById('weather').innerHTML = `
+            Current Temp: ${temp} °F<br>
+            Wind Speed: ${wind} m/s<br>
+          `;
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          document.getElementById('weather').innerText = "Failed to retrieve weather data.";
+        });
+
+    }
+  </script>
+  <script src="./layer.js"></script>
+</body>
+
+</html>
+>>>>>>> database-connection
