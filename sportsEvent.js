@@ -1,6 +1,7 @@
+// Map sports to their respective leagues
 const leaguesBySport = new Map([
   ["Basketball", ["NBA"]],
-  ["Football", ["AFL", "NFL"]],
+  ["Football", ["UFL", "NFL"]],
   ["Baseball", ["MLB"]],
   ["Hockey", ["NHL"]],
   ["Soccer", [
@@ -12,16 +13,12 @@ const leaguesBySport = new Map([
     "Ligue 1", 
     "UEFA Champions League",
   ]],
-  ["Tennis", []],
-  ["Golf", ["PGA Tour"]],
-  ["MMA", ["UFC"]],
-  ["Auto Racing", ["Formula 1"]]
 ]);
 
-
+// Map league names to their abbreviations used in the API
 var abrvByLeague = new Map([
-  ["NBA", "nba"],
-  ["AFL", "afl"],
+    ["NBA", "nba"],
+    [ "UFL", "ufl"],
     ["NFL", "nfl"],
     ["MLB", "mlb"],
     ["NHL", "nhl"],
@@ -33,6 +30,7 @@ var abrvByLeague = new Map([
     ["Ligue 1", "esp.1"],
     ["UEFA Champions League", "uefa.champions"],
 ]);
+// Populate sports and leagues dropdowns on page load
 window.addEventListener("DOMContentLoaded", () =>{
 
     console.log("Populating sports league dropdown");
@@ -47,9 +45,24 @@ window.addEventListener("DOMContentLoaded", () =>{
         sportOption.text = sport;
         sportsSelect.appendChild(sportOption);
     } );;
+    
+    leagueSelect.innerHTML = ""; // Clear existing options
+    
+    // Get leagues for the first sport in the map
+    var firstSport = leaguesBySport.keys().next().value;
+    var leagues = leaguesBySport.get(firstSport) || [];
+
+    // Populate league dropdown
+    leagues.forEach(function(league) {
+        var option = document.createElement("option");
+        option.value = league;
+        option.text = league;
+        leagueSelect.appendChild(option);
+    });
 
 });
 
+// Event listener for sport selection change
 document.getElementById("sports-select").addEventListener("change", function() {
     var selectedSport = this.value;
     var leagueSelect = document.getElementById("league-select");
@@ -69,6 +82,12 @@ document.getElementById("sports-select").addEventListener("change", function() {
     });
 });
 
+function getWeatherForEvent(address, date) {
+    
+    console.log("Fetching weather for event at location:", address, "on date:", date);
+    document.getElementById("weather-data-screen").style.display = "flex";
+}
+// Event listener for the "Get Events" button
 document.getElementById("get-events-btn").addEventListener("click", async function(event) {
 
     // Prevent form submission
@@ -101,6 +120,7 @@ document.getElementById("get-events-btn").addEventListener("click", async functi
         var eventDiv = document.createElement("div");
         eventDiv.className = "event";
 
+        // Populate event details
         eventDiv.innerHTML = `
             <div class="teams-info">
                 <div class ="teams-container">
@@ -116,15 +136,23 @@ document.getElementById("get-events-btn").addEventListener("click", async functi
             <p>Location: ${event.location}</p>
             <p>Date: ${new Date(event.date).toLocaleDateString()}</p>
             <p>Time: ${new Date(event.date).toLocaleTimeString()}</p>
-            <button id="weather-buttonclass="filter-button">Check Weather</button>
         `;
+        const weatherBtn = document.createElement("button");
+        weatherBtn.textContent = "Check Weather";
+        weatherBtn.className = "filter-button";
+
+         weatherBtn.addEventListener("click", () => {
+            getWeatherForEvent(event.address, event.date);
+        });
 
         eventsContainer.appendChild(eventDiv);  
+        eventDiv.appendChild(weatherBtn);
     });
       
 
 });
 
+// Sports Event class
 class SportsEvent {
     constructor(awayTeam, homeTeam, awayTeamLogo, homeTeamLogo, location, date) {
         this.awayTeam = awayTeam;
@@ -133,43 +161,58 @@ class SportsEvent {
         this.homeTeam = homeTeam;
         this.loction = location;
         this.date = date;
-
+        this.address = null;
     }
 }
 
+// Fetch sports event data from ESPN API
 async function getSportsEventData(sport,league)
 {
     let sportsData = [];
 
-    const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard`);
+    var todaysDate = new Date();
+    todaysDate = formatDate(todaysDate, 0);
+    var dateInAWeek = new Date();
+    dateInAWeek = formatDate(dateInAWeek, 7);
+   
+    const response = await fetch(`https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard?dates=${todaysDate}-${dateInAWeek}`);
     const data = await response.json();
+    console.log("Raw data from API:", data.events.length);
+    
+        data.events.forEach(eventJson => {
+                var event = new SportsEvent(null, null, null, null, null, null);
 
-    data.events.forEach(eventJson => {
-
-        var event = new SportsEvent(null, null, null, null, null, null);
-
-        // Determine who is the home team and who is the away team
-        if(eventJson.competitions[0].competitors[0].homeAway === "home")
-        {
-            event.awayTeam = eventJson.competitions[0].competitors[1].team.displayName;
-            event.awayTeamLogo = eventJson.competitions[0].competitors[1].team.logo;
-            event.homeTeamLogo = eventJson.competitions[0].competitors[0].team.logo;
-            event.homeTeam = eventJson.competitions[0].competitors[0].team.displayName;
-        }
-        else
-        {
-            event.awayTeam = eventJson.competitions[0].competitors[0].team.displayName;
-            event.awayTeamLogo = eventJson.competitions[0].competitors[0].team.logo;
-            event.homeTeamLogo = eventJson.competitions[0].competitors[1].team.logo;
-            event.homeTeam = eventJson.competitions[0].competitors[1].team.displayName;
-        }
-        
-        event.location = eventJson.competitions[0].venue.fullName;
-        event.date = eventJson.date;
-       
-        sportsData.push(event);
-
-    });
+                // Determine who is the home team and who is the away team
+                if(eventJson.competitions[0].competitors[0].homeAway === "home")
+                {
+                    event.awayTeam = eventJson.competitions[0].competitors[1].team.displayName;
+                    event.awayTeamLogo = eventJson.competitions[0].competitors[1].team.logo;
+                    event.homeTeamLogo = eventJson.competitions[0].competitors[0].team.logo;
+                    event.homeTeam = eventJson.competitions[0].competitors[0].team.displayName;
+                }
+                else
+                {
+                    event.awayTeam = eventJson.competitions[0].competitors[0].team.displayName;
+                    event.awayTeamLogo = eventJson.competitions[0].competitors[0].team.logo;
+                    event.homeTeamLogo = eventJson.competitions[0].competitors[1].team.logo;
+                    event.homeTeam = eventJson.competitions[0].competitors[1].team.displayName;
+                }
+                
+                event.location = eventJson.competitions[0].venue.fullName;
+                event.date = eventJson.date;
+                event.address = eventJson.competitions[0].venue.address;
+            
+                sportsData.push(event);
+             });
 
     return sportsData;
+}
+
+// Helper function to format date as YYYYMMDD
+function formatDate(date, addDays) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()+addDays).padStart(2, '0');
+
+    return `${year}${month}${day}`;
 }
