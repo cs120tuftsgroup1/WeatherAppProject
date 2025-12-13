@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Sports Events</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+         <link rel="stylesheet" href="style.css">
+    </head>
+    <body>  
+        <h1>Sports Events</h1>
+        <div class="user-favorties"></div>
+        <form class="sports-form">
+           
+            <h3>Sports</h3>
+            <select class="select-options" id="sports-select"> </select>
+            <h3>Leagues</h3>
+            <select  class="select-options" id="league-select"> </select>
+            <button class="filter-button" id="get-events-btn" value="Get Events">Get Events</button>
+            <button class="filter-button">Get Favorites</button>
+            
+        </form>
+        <div class="league-logo" id="league-logo"></div>
+         <div class ="events-container" id="events-container"></div>
+        <script type="module" src="layer.js"></script>
+        <script type="module" src="sportsEvent.js"></script>
+    </body>
+
+   
+</html>
