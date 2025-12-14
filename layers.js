@@ -1,27 +1,22 @@
 document.addEventListener("DOMContentLoaded", function () {
-
-  const headerHTML = `
-    <header class="site-logo">
-      <div class="header-content">
-      <a href="home.html">  
-      <img src="pics/TruSky.png" alt="Weather Logo" class="logo">
-        <h2>My Weather App</h2>
-      </div>
-      <nav>
-        <a href="#">Home</a> |
-        <a href="#">About</a>
-      </nav>
-    </header>
-  `;
-
-  const footerHTML = `
-    <footer class="footer-container">
-      <p>&copy; 2025 My Weather App</p>
-    </footer>
-  `;
-
-  
-  document.getElementById("header").innerHTML = headerHTML;
-  document.getElementById("footer").innerHTML = footerHTML;
-
+    function loadFragment(section, wrapperTag, wrapperClass, insertAtStart = false) {
+        fetch(section)
+            .then(response => {
+                if (!response.ok) throw new Error(`Failed to load ${section}`);
+                return response.text();
+            })
+            .then(data => {
+                const wrapper = document.createElement(wrapperTag);
+                if (wrapperClass) wrapper.className = wrapperClass;
+                wrapper.innerHTML = data;
+                if (insertAtStart) {
+                    document.body.insertBefore(wrapper, document.body.firstChild);
+                } else {
+                    document.body.appendChild(wrapper);
+                }
+            })
+            .catch(err => console.error(err));
+    }
+    loadFragment("header.html", "header", "site-header", true);
+    loadFragment("footer.html", "footer", "footer-container", false);
 });
