@@ -18,193 +18,247 @@ const client = new MongoClient(uri, {
   }
 })
 
-const server = http.createServer(function (req, res) {
-  urlObj = url.parse(req.url, true)
-  let path = urlObj.pathname
+async function startServer() {
+  try {
+    await client.connect();
+    console.log("MongoDB connected");
+  const server = http.createServer(function (req, res) {
+    urlObj = url.parse(req.url, true)
+    let path = urlObj.pathname
 
-  // Request wants to load home path
-  if (path === '/') {
-    path = '/home.html'
-  } else if (path === '/favicon.ico') {
-    res.writeHead(204)
-    res.end()
-    return
-  } else if (path === '/logMeIn' && req.method === 'POST') {
-    let body = ''
 
-    req.on('data', chunk => (body += chunk.toString()))
+    // MIME types
+    const mimeTypes = {
+      '.html': 'text/html',
+      '.css': 'text/css',
+      '.js': 'application/javascript',
+      '.jsx': 'application/javascript',
+      '.json': 'application/json',
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon'
+    }
 
-    req.on('end', async () => {
-      try {
-        const { email, password } = JSON.parse(body)
+    // Request wants to load home path
+    if (path === '/') {
+      path = '/home.html'
+    } else if (path === '/favicon.ico') {
+      res.writeHead(204)
+      res.end()
+      return
+    } else if (path === '/logMeIn' && req.method === 'POST') {
+      let body = ''
 
-        const exists = await checkForUser(email, password)
+      req.on('data', chunk => (body += chunk.toString()))
 
-        if (exists) {
-          const cookie = [
-            `userId=${exists}`,
-            'SameSite=Strict',
-            'Path=/',
-            'Max-Age=86400' // 1 day
-            // 'Secure' // enable in production with HTTPS
-          ].join('; ')
-          res.writeHead(
-            200,
-            { 'Content-Type': 'application/json' },
-            {'Set-Cookie': cookie}
-          )
+      req.on('end', async () => {
+        try {
+          const { email, password } = JSON.parse(body)
+
+          const exists = await checkForUser(email, password)
+
+          if (exists) {
+            const cookie = [
+              `userId=${exists}`,
+              'SameSite=Strict',
+              'Path=/',
+              'Max-Age=86400' // 1 day
+              // 'Secure' // enable in production with HTTPS
+            ].join('; ')
+            res.writeHead(
+              200,
+              { 'Content-Type': 'application/json' },
+              { 'Set-Cookie': cookie }
+            )
+            res.end(
+              JSON.stringify({
+                success: true,
+                id: exists,
+                message: 'Login successful'
+              })
+            )
+          } else {
+            res.end(
+              JSON.stringify({
+                message: 'Invalid email or password'
+              })
+            )
+          }
+        } catch (err) {
+          res.end(JSON.stringify({ success: false, message: 'Bad request' }))
+        }
+      })
+    } else if (path === '/signUp' && req.method === 'POST') {
+      let body = ''
+
+      req.on('data', chunk => (body += chunk.toString()))
+      req.on('end', async () => {
+        try {
+          if( await !checkUserExists(JSON.parse(body).email)){
+            console.log("User already exists");
+            throw new Error('User already exists');
+          }
+          else
+          {
+            // Basic validation
+            if(!JSON.parse(body).email.includes('@') && !JSON.parse(body).email.includes('.'))
+            {
+              throw new Error('Invalid email format');
+            }
+            else if(JSON.parse(body).password.length < 6)
+            {
+                throw new Error('Password too short');
+            }
+          }
+    
+          const { username, email, password } = JSON.parse(body)
+          if( await !insertUser(username, email, password))
+          {
+            throw new Error('Failed to insert user');
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' })
           res.end(
             JSON.stringify({
               success: true,
-              id: exists,
-              message: 'Login successful'
+              message: 'User registered successfully'
             })
-          )
-        } else {
-          res.end(
-            JSON.stringify({
-              message: 'Invalid email or password'
-            })
-          )
+          );
+        } catch (err) {
+          res.end(JSON.stringify({ success: false, message: err.message }) );
         }
-      } catch (err) {
-        res.end(JSON.stringify({ success: false, message: 'Bad request' }))
-      }
-    })
-    return
-  }
-  // MIME types
-  const mimeTypes = {
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.jsx': 'application/javascript',
-    '.json': 'application/json',
-    '.png': 'image/png',
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.gif': 'image/gif',
-    '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
-  }
-  // Get the full path
-  const fullPath = __dirname + path
-  // Get the exetension
-  const extn = pathModule.extname(fullPath)
-
-  // Set the correct content type
-  const contentType = mimeTypes[extn] || 'text/plain'
-
-  fs.readFile(fullPath, function (err, content) {
-    if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' })
-      return res.end('File not found')
+      })
     }
-    res.writeHead(200, { 'Content-Type': contentType })
-    res.end(content)
-  })
-})
+    else
+    {
+        // Get the full path
+        const fullPath = __dirname + path
+        // Get the exetension
+        const extn = pathModule.extname(fullPath)
 
-//   // Request wants to load style sheet
-//   else if("/style.css"){
-//     file= __dirname + "/style.css";
-//     fs.readFile(file, function(err, styleSheet) {
+        // Set the correct content type
+        const contentType = mimeTypes[extn] || 'text/plain'
 
-//     // Error reading file
-//     if (err) {
-//         res.writeHead(404, { "Content-Type": "text/plain" });
-//         return res.end("CSS file not found");
-//     }
-//     // Add file to the response
-//     res.writeHead(200, {'Content-Type': 'text/css'});
-//     res.end(styleSheet);
+        fs.readFile(fullPath, function (err, content) {
+          if (err) {
+            res.writeHead(404, { 'Content-Type': 'text/plain' })
+            return res.end('File not found')
+          }
+          res.writeHead(200, { 'Content-Type': contentType })
+          res.end(content)
+        })
 
-//     });
-//   }
-//   else if(path == "/account")
-//   {
-//     file= __dirname + "/account.html";
-//     fs.readFile(file, function(err, accountView) {
-
-//         // Error reading file
-//         if (err) {
-//             res.writeHead(404, { "Content-Type": "text/plain" });
-//             return res.end("Account page not found");
-//         }
-
-//         // Add file to the response
-//         res.writeHead(200, {'Content-Type': 'text/html'});
-//         res.end(accountView);
-//     });
-//   }
-//   else if (path == "/sportsEvents")
-//   {
-//     file= __dirname + "/sportsEvents.html";
-//     fs.readFile(file, function(err, sportsEventsView) {
-
-//         // Error reading file
-//         if (err) {
-//             res.writeHead(404, { "Content-Type": "text/plain" });
-//             return res.end("Sports Events page not found");
-//         }
-
-//         // Add file to the response
-//         res.writeHead(200, {'Content-Type': 'text/html'});
-//         res.end(sportsEventsView);
-//     });
-//   }
-//   else if (path == "/layer.js")
-//   {
-//     file= __dirname + "/layer.js";
-//     fs.readFile(file, function(err, layerScript) {
-
-//         // Error reading file
-//         if (err) {
-//             res.writeHead(404, { "Content-Type": "text/plain" });
-//             return res.end("Layer script not found");
-//         }
-
-//         // Add file to the response
-//         res.writeHead(200, {'Content-Type': 'application/javascript'});
-//         res.end(layerScript);
-//     });
-//   }
-//   // Request wants to load the favicon
-//   else if(path === "/favicon.ico") {
-//     res.writeHead(204);
-//     res.end();
-//     return;
-//     }
-// })
-
-// Check if a userExists
-async function checkForUser (emailTofind, passwordToFind) {
-  // Connect to database
-  await client.connect()
-
-  // Get database
-  var db = client.db('weatherApp')
-
-  // Get collection
-  var collection = db.collection('userData')
-
-  //  Construct query
-  var query = { email: emailTofind, password: passwordToFind }
-
-  // Run the query
-  var result = await collection.findOne(query)
-
-  client.close()
-
-  // If result is null then the user does not exist.
-  if (result == null) return null
-  else {
-    return result._id
+        
+    }
+  });
+  // If on local port use 8080, if deployed use system port
+    const PORT = process.env.PORT || 8080
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`)
+    })
+  }catch (e) {
+    console.error(e);
   }
-}
 
-// If on local port use 8080, if deployed use system port
-const PORT = process.env.PORT || 8080
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  
+}
+    // Check if a userExists
+    async function checkForUser (emailTofind, passwordToFind) {
+      // Connect to database
+
+      // Get database
+      var db = client.db('weatherApp')
+
+      // Get collection
+      var collection = db.collection('userData')
+
+      //  Construct query
+      var query = { email: emailTofind, password: passwordToFind }
+
+      // Run the query
+      var result = await collection.findOne(query)
+
+      // If result is null then the user does not exist.
+      if (result == null) return null
+      else {
+        return result._id
+      }
+    }
+
+    
+// Function to insert a new user into the database
+    async function insertUser (fullName, email, password) {
+      try {
+        // Get database
+        var db = client.db('weatherApp')
+
+        // Get collection
+        var collection = db.collection('userData')
+
+        // Fill in new userData
+        var newData = { name: fullName, email: email, password: password }
+
+        // Send the newData to the database
+        await collection.insertOne(newData, function (err, res) {
+          // Error handling for incase insert fails
+          if (err) {
+            return console.log(err)
+          }
+        })
+        // If insert is succsseful send message to console
+        console.log('A new user has been inserted into the database')
+      } catch (e) {
+        console.error(e)
+        return false; 
+      }
+      return true;
+    }
+
+    // Check if a userExists
+    async function checkForUser(emailTofind, passwordToFind)
+    {
+        // Get database
+        var db = client.db("weatherApp");
+        
+        // Get collection 
+        var collection = db.collection("userData");
+    
+        //  Construct query
+        var query = {email:emailTofind , password: passwordToFind};
+    
+        // Run the query 
+        var result = await collection.findOne(query);
+    
+        // If result is null then the user does not exist.
+       if( result == null ) return null;
+       else{
+        return result._id;
+       }
+           
+    }
+
+     // Check if a userExists
+    async function checkUserExists(emailTofind)
+    {
+        // Get database
+        var db = client.db("weatherApp");
+        
+        // Get collection 
+        var collection = db.collection("userData");
+    
+        //  Construct query
+        var query = {email:emailTofind };
+    
+        // Run the query 
+        var result = await collection.findOne(query); 
+    
+        // If result is null then the user does not exist.
+        return result != null;
+           
+    }
+
+
+
+    startServer();
