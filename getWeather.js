@@ -22,7 +22,10 @@ function getWeather() {
 
       const forecastUrl =
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
-        `&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,windspeed_10m_max,weathercode` +
+        `&current_weather=true` +
+        `&daily=temperature_2m_max,temperature_2m_min,` +
+        `apparent_temperature_max,apparent_temperature_min,` +
+        `windspeed_10m_max,winddirection_10m_dominant,weathercode` +
         `&timezone=auto`;
 
       return fetch(forecastUrl);
@@ -34,6 +37,15 @@ function getWeather() {
         return;
       }
 
+      /* ---------- CURRENT WEATHER ---------- */
+      const currentTempF = (weatherData.current_weather.temperature * 9 / 5 + 32).toFixed(1);
+
+      const currentWindMph = (weatherData.current_weather.windspeed * 0.621371).toFixed(1);
+
+      const currentDirection = degreesToCompass(weatherData.current_weather.winddirection);
+
+      const currentWeatherIcon = getWeatherIcon(weatherData.current_weather.weathercode);
+
       const days = weatherData.daily.time;
       const maxTemps = weatherData.daily.temperature_2m_max;
       const minTemps = weatherData.daily.temperature_2m_min;
@@ -41,8 +53,25 @@ function getWeather() {
       const feelsLikeMin = weatherData.daily.apparent_temperature_min;
       const weatherCodes = weatherData.daily.weathercode;
       const windSpeeds = weatherData.daily.windspeed_10m_max;
+      const windDirections = weatherData.daily.winddirection_10m_dominant;
 
-      let html = `<h3>7-Day Forecast for ${city}</h3>`;
+
+      let html = `
+        <div class="current">
+          <h3>Current Weather in ${city}</h3>
+          <div class="current-day">
+            <strong>Now</strong>
+          <div class="icon">
+          <img src="${currentWeatherIcon}" alt="Current Weather Icon">
+        </div>
+          High: ${currentTempF} °F<br>
+          Wind: ${currentWindMph} mph from ${currentDirection}
+          </div>
+        </div>
+
+        <h3 class="forecast-title">7-Day Forecast</h3>
+        <div class="forecast-grid">
+        `;
 
       for (let i = 0; i < 7; i++) {
         const maxF = (maxTemps[i] * 9 / 5 + 32).toFixed(1);
@@ -50,6 +79,7 @@ function getWeather() {
         const feelsMaxF = (feelsLikeMax[i] * 9 / 5 + 32).toFixed(1);
         const feelsMinF = (feelsLikeMin[i] * 9 / 5 + 32).toFixed(1);
         const windMph = (windSpeeds[i] * 0.621371).toFixed(1);
+        const windDirection = degreesToCompass(windDirections[i]);
 
         const icon = getWeatherIcon(weatherCodes[i]);
 
@@ -61,11 +91,11 @@ function getWeather() {
             </div>
             High: ${maxF} °F (Feels like ${feelsMaxF} °F)<br>
             Low: ${minF} °F (Feels like ${feelsMinF} °F)<br>
-            Wind: ${windMph} mph
+            Wind: ${windMph} mph from ${windDirection}
           </div>
         `;
       }
-
+      html += `</div>`; // closes .forecast-grid
       document.getElementById('weather').innerHTML = html;
     })
     .catch(error => {
@@ -75,8 +105,8 @@ function getWeather() {
     });
 }
 
- //https://open-meteo.com/en/docs?hourly=temperature_2m,weather_code&daily=weather_code&timezone=America%2FNew_York#data_sources
-    /* Code	Description
+//https://open-meteo.com/en/docs?hourly=temperature_2m,weather_code&daily=weather_code&timezone=America%2FNew_York#data_sources
+/* Code	Description
 0	Clear sky
 1, 2, 3	Mainly clear, partly cloudy, and overcast
 45, 48	Fog and depositing rime fog
@@ -89,7 +119,9 @@ function getWeather() {
 80, 81, 82	Rain showers: Slight, moderate, and violent
 85, 86	Snow showers slight and heavy
 95 *	Thunderstorm: Slight or moderate
-96, 99 *	Thunderstorm with slight and heavy hail*/
+96, 99 *	Thunderstorm with slight and heavy hail
+https://www.flaticon.com/search?word
+*/
 function getWeatherIcon(code) {
   if (code === 0) return "pics/clear.png";
   if (code <= 2) return "pics/partlyCloudy.png";
@@ -100,3 +132,14 @@ function getWeatherIcon(code) {
   if (code >= 80 && code <= 82) return "pics/rainShower.png";
   if (code >= 95) return "pics/thunderStorm.png";
 }
+
+/* ---------- WIND DIRECTION ---------- */
+function degreesToCompass(deg) {
+  if (deg >= 315 || deg < 45) return "North";
+  if (deg < 135) return "East";
+  if (deg < 225) return "South";
+  return "West";
+}
+
+
+

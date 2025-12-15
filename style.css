@@ -1,131 +1,147 @@
-html, body {
+html,
+body {
     Margin: 0;
     Padding: 0;
-    height:100%;
+    height: 100%;
     z-index: 0;
 }
-body{
-    display:flex;
+
+body {
+    display: flex;
     flex-direction: column;
 }
-footer{
-    margin-top:auto;
+
+footer {
+    margin-top: auto;
 }
-.footer-container{
+
+.footer-container {
     display: inline-block;
-    width:100%;
-    background-color:#274C77;
-    color:#ffff;
+    width: 100%;
+    background-color: #274C77;
+    color: #ffff;
     padding-left: 10px;
 }
 
-.site-header{
-    background-color:#274C77;
-    color:#ffff;
+.site-header {
+    background-color: #274C77;
+    color: #ffff;
     padding-left: 10px;
     display: flex;
     text-decoration: none;
-    
+
 }
-.nav-links{
+
+.nav-links {
     padding-left: 5px;
     list-style: none;
     display: flex;
     margin: 0;
     padding: 0;
 }
-.nav-item{
-     
+
+.nav-item {
+
     margin-right: 20px;
     text-decoration: none;
     size: 24px;
     color: #ffff;
 }
-.logo{
-    float:left;
+
+.logo {
+    float: left;
     width: auto;
 }
-li{
-  align-content: center;
-    justify-content: center;  
+
+li {
+    align-content: center;
+    justify-content: center;
 }
-.sports-form{
-    display:flex;
-    width:100%;
+
+.sports-form {
+    display: flex;
+    width: 100%;
     justify-content: center;
     align-items: center;
 }
-.select-options{
+
+.select-options {
     margin: 10px;
 }
-.events-container{
+
+.events-container {
     display: grid;
     grid-template-columns: auto auto auto;
-    width:100%;
+    width: 100%;
     justify-content: center;
     align-items: center;
 }
-.league-logo{
-    display:flex;
-    width:auto;
-    height:auto;
+
+.league-logo {
+    display: flex;
+    width: auto;
+    height: auto;
     justify-content: center;
     align-items: center;
 }
-.event{
+
+.event {
     border: 1px solid #000;
     border-radius: 5px;
     padding: 10px;
     margin: 10px;
     width: 300px;
-    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
-.filter-button{
+
+.filter-button {
     padding: 10px 20px;
-    margin:2px;
+    margin: 2px;
     background-color: #4BB3FD;
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
-.filter-button:hover{
+
+.filter-button:hover {
     background-color: #357ABD;
 }
-.teams-container{
-    display:flex;
-    float:left;
+
+.teams-container {
+    display: flex;
+    float: left;
     align-items: center;
-    width:100%;
-    padding-right:20px;
-    margin-left:20px;
+    width: 100%;
+    padding-right: 20px;
+    margin-left: 20px;
 }
-.team-logo{
-    padding-right:10px;
+
+.team-logo {
+    padding-right: 10px;
 }
-.at-text{
-    display:flex;
+
+.at-text {
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding-right:10px;
+    padding-right: 10px;
 }
-.teams-info{
-    display:flex;
+
+.teams-info {
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-direction: column;
 }
-.weather-data-screen-class{
-    display: none;
-    position: fixed;
-    top: 30%;
-    left: 10%;
-    right:10%;
-    background-color: #fff;
-    border: 1px solid #000;
-    border-radius: 5px;
+
+.current {
+    background: linear-gradient(135deg, #a6c8ff, #ffffff);
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     padding: 20px;
     width: auto;
@@ -178,4 +194,97 @@ header.site-logo .logo {
   width: 150px;       
   border-radius: 50%; 
   object-fit: cover;  
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.current:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.current h3 {
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+    color: #274C77;
+}
+
+.current-day strong {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.current-day .icon img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+    transition: transform 0.3s ease;
+}
+
+.current-day .icon img:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.current-day div,
+.current-day br {
+    line-height: 1.5;
+    font-size: 1rem;
+    color: #333;
+}
+
+.forecast-title {
+    font-size: x-large;
+    color: #274C77;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+
+.day {
+    background: linear-gradient(135deg, #e3f2fd, #ffffff);
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.day:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+}
+
+.day strong {
+    display: block;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.day .icon img {
+    width: 60px;
+    height: 60px;
+    margin: 8px 0;
+    transition: transform 0.3s ease;
+}
+
+.day .icon img:hover {
+    transform: scale(1.1) rotate(5deg);
+}
+
+header.site-logo .logo {
+    height: 150px;
+    width: 150px;
+    border-radius: 50%;
+    object-fit: cover;
 }
