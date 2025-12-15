@@ -5,18 +5,32 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   const email = e.target.email.value;
   const password = e.target.password.value;
 
-  const res = await fetch("/api/signup", {
+  //
+  const res = await fetch('http://localhost:8080/signUp', {
     method: "POST",
     headers: {"Content-Type": "application/json"},
+    credentials: 'include',
     body: JSON.stringify({ username, email, password })
   });
-
-  const data = await res.json();
-
-  if (data.success) {
-    localStorage.setItem("token", data.token);
-    window.location.href = "index.html";  // redirect to homepage
-  } else {
-    alert(data.message || "Signup failed");
+  if(res.status !== 200) {  
+    alert(res.message || "Signup failed");
+  }
+  else
+  {
+    alert("Signup successful!");
+    const loginRes = await fetch('http://localhost:8080/logMeIn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password })
+    }) 
+    if(loginRes.status !== 200) { 
+      alert(loginRes.message || "Login after signup failed");
+      return;
+    }
+    else
+    {
+      window.location.href = "home.html";
+    }
   }
 });
