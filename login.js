@@ -1,21 +1,29 @@
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault()
 
-  const email = e.target.email.value;
-  const password = e.target.password.value;
+  const email = e.target.email.value
+  const password = e.target.password.value
 
-  const res = await fetch("/api/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
+  const res = await fetch('http://localhost:8080/logMeIn', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email, password })
-  });
-
-  const data = await res.json();
-
+  })
+  const data = await res.json()
   if (data.success) {
-    localStorage.setItem("token", data.token);
-    window.location.href = "index.html";
+
+    alert('Login successful!')
+    window.location.href = "home.html";
   } else {
-    alert(data.message || "Login failed");
+    alert('Invalid email or password.')
   }
-});
+
+
+  // if (data.success) {
+  //   localStorage.setItem("token", data.token);
+  //   window.location.href = "home.html";
+  // } else {
+  //   alert(data.message || "Login failed");
+  // }
+})

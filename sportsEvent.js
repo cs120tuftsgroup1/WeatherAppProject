@@ -82,10 +82,15 @@ document.getElementById("sports-select").addEventListener("change", function() {
     });
 });
 
-function getWeatherForEvent(address, date) {
+async function getWeatherForEvent(address, date) {
     
     console.log("Fetching weather for event at location:", address, "on date:", date);
     document.getElementById("weather-data-screen").style.display = "flex";
+
+    const  response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=44.380471692359365&longitude=-73.22601898259933&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,windspeed_10m_max,weathercode&start_date=2025-12-14&end_date=2025-12-14&timezone=auto`);
+    const data = await response.json();
+
+
 }
 // Event listener for the "Get Events" button
 document.getElementById("get-events-btn").addEventListener("click", async function(event) {
