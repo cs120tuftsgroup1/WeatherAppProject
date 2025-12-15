@@ -134,7 +134,7 @@ function getWeatherIcon(code) {
 }
 
 /* ---------- WIND DIRECTION ---------- */
-function degreesToCompass(deg) {
+export function degreesToCompass(deg) {
   if (deg >= 315 || deg < 45) return "North";
   if (deg < 135) return "East";
   if (deg < 225) return "South";
