@@ -60,7 +60,7 @@ async function insertUser(fullName, email, password ) {
 }
 
 // Check if a userExists
-async function checkForUser(emailTofind)
+export async function checkForUser(emailTofind, passwordToFind)
 {
     // Connect to database
     await client.connect();
@@ -72,7 +72,7 @@ async function checkForUser(emailTofind)
     var collection = db.collection("userData");
 
     //  Construct query
-    var query = {email:emailTofind};
+    var query = {email:emailTofind , password: passwordToFind};
 
     // Run the query 
     var result = await collection.findOne(query);

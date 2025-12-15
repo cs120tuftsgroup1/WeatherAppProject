@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-
     function loadFragment(section, wrapperTag, wrapperClass, insertAtStart = false) {
         fetch(section)
             .then(response => {
@@ -10,7 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 const wrapper = document.createElement(wrapperTag);
                 if (wrapperClass) wrapper.className = wrapperClass;
                 wrapper.innerHTML = data;
-
                 if (insertAtStart) {
                     document.body.insertBefore(wrapper, document.body.firstChild);
                 } else {
@@ -19,9 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(err => console.error(err));
     }
-
     loadFragment("header.html", "header", "site-header", true);
-
-
     loadFragment("footer.html", "footer", "footer-container", false);
 });
