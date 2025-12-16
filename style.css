@@ -256,21 +256,16 @@ header.site-logo .logo {
     box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
     z-index: 100;
     font-family:  Helvetica, sans-serif;
-    flex-direction: row;    /* side by side */
-    justify-content: center;
-    align-items: flex-start;
 
-    padding: 20px;
-    gap: 20px;              /* spacing between divs */
 
 }
 
 .weather-content
 {
-    width:200px;
+    width:400px;
 }
 .fav-content{
-    width:200px;
+    width:400px;
 }
 .weather-title{
 
@@ -280,4 +275,23 @@ header.site-logo .logo {
 .title-container{
 
     width:100%;
+}
+.weather-data{
+    display:flex;
+    flex-direction: row;    /* side by side */
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 20px;
+    gap: 20px;              /* spacing between divs */
+}
+.Favorite-team-div
+{
+    display:flex;
+    flex-direction: row;
+   /* min-width: 300px;*/
+   width:auto;
+    justify-content: space-between;
+    
+
 }

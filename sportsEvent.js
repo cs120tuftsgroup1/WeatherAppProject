@@ -1,4 +1,4 @@
-import { countryNameToCode,usStateAbrv } from './countryCode.js'
+import { countryNameToCode, usStateAbrv } from './countryCode.js'
 import { degreesToCompass } from './getWeather.js'
 
 // Map sports to their respective leagues
@@ -93,63 +93,66 @@ function closeWeatherWindow () {
   weatherDiv.innerHTML = ``
 }
 
-async function getWeatherForEvent (address, date) {
+async function getWeatherForEvent (address, date, teamData) {
   var weatherDiv = document.getElementById('weather-data-screen')
   weatherDiv.style.display = 'flex'
 
   weatherDiv.innerHTML = `<p>Loading Weather Data.....`
 
-    var locationResponse;
-    var locationData;
-    var longitude;
-    var latitude;
-    var countOrState;
-    if(address.state)
-    {
-        var stateName = usStateAbrv[address.state];
-        console.log(stateName);
-        locationResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${address.city}&countryCode=US` )
-       
-        locationData = await locationResponse.json()
-        for(var i = 0; i < locationData.results.length; i++)
-        {
-            console.log(locationData.results[i].admin1)
-            if(locationData.results[i].admin1 === stateName)
-            {
-                longitude = locationData.results[i].longitude;
-                latitude = locationData.results[i].latitude;
-                countOrState = stateName;
-                break;
-            }
-        }
-    }
-    else
-    {
-        locationResponse = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${address.city}&countryCode=${countryNameToCode[address.country]}`)
-        locationData = await locationResponse.json();
-        longitude = locationData.results[0].longitude;
-        latitude = locationData.results[0].latitude;
-        countOrState = address.country;
-    }
+  var locationResponse
+  var locationData
+  var longitude
+  var latitude
+  var countOrState
+  if (address.state) {
+    var stateName = usStateAbrv[address.state]
+    console.log(stateName)
+    locationResponse = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${address.city}&countryCode=US`
+    )
 
+    locationData = await locationResponse.json()
+    for (var i = 0; i < locationData.results.length; i++) {
+      console.log(locationData.results[i].admin1)
+      if (locationData.results[i].admin1 === stateName) {
+        longitude = locationData.results[i].longitude
+        latitude = locationData.results[i].latitude
+        countOrState = stateName
+        break
+      }
+    }
+  } else {
+    locationResponse = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${
+        address.city
+      }&countryCode=${countryNameToCode[address.country]}`
+    )
+    locationData = await locationResponse.json()
+    longitude = locationData.results[0].longitude
+    latitude = locationData.results[0].latitude
+    countOrState = address.country
+  }
 
   const response = await fetch(
     `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,windspeed_10m_max,winddirection_10m_dominant,weathercode&start_date=2025-12-14&end_date=2025-12-14&timezone=auto`
   )
-    const weatherData = await response.json()
+  const weatherData = await response.json()
+  weatherDiv.innerHTML = ``
 
-  var weatherTitle = document.createElement('h2');
-  weatherTitle.textContent = `Weather Forecast for ${address.city}, ${countOrState} on ${new Date(date).toLocaleDateString()}`;
-  weatherTitle.className = 'weather-title';
+  var weatherTitleContainer = document.createElement('div')
+  var weatherTitle = document.createElement('h2')
+  weatherTitle.textContent = `Weather Forecast for ${
+    address.city
+  }, ${countOrState} on ${new Date(date).toLocaleDateString()}`
+  weatherTitle.className = 'weather-title'
 
-//   var weatherTitleContainer = document.getElementById('title-containerId');
-//   console.log(weatherTitleContainer);
-//   weatherTitleContainer.appendChild(weatherTitle);
+  console.log(weatherTitleContainer)
+  weatherTitleContainer.appendChild(weatherTitle)
+  weatherDiv.appendChild(weatherTitleContainer)
 
+  var weatherDataDiv = document.createElement('div')
+  weatherDataDiv.className = 'weather-data'
 
-  weatherDiv.innerHTML = ``;
   var closeButton = document.createElement('button')
   closeButton.textContent = 'Close'
   closeButton.className = 'closeButton'
@@ -157,22 +160,171 @@ async function getWeatherForEvent (address, date) {
 
   weatherDiv.appendChild(closeButton)
 
-  
-  const content = document.createElement('div');
-  content.className = 'weather-content';
-  content.innerHTML = `<p>Max Temperature: ${((weatherData.daily.temperature_2m_max[0] * (9 / 5) + 32).toFixed(1))} °F</p>
-        <p>Min Temperature: ${( (weatherData.daily.temperature_2m_min[0] * (9 / 5) + 32 ).toFixed(1))} °F</p>
-        <p>Max Wind Speed: ${(weatherData.daily.windspeed_10m_max[0] * 0.621371).toFixed(1)} mph</p>
-        <p>Wind Direction: ${degreesToCompass(weatherData.current_weather.winddirection)}</p>
+  const content = document.createElement('div')
+  content.className = 'weather-content'
+  content.innerHTML = `<p>Max Temperature: ${(
+    weatherData.daily.temperature_2m_max[0] * (9 / 5) +
+    32
+  ).toFixed(1)} °F</p>
+        <p>Min Temperature: ${(
+          weatherData.daily.temperature_2m_min[0] * (9 / 5) +
+          32
+        ).toFixed(1)} °F</p>
+        <p>Max Wind Speed: ${(
+          weatherData.daily.windspeed_10m_max[0] * 0.621371
+        ).toFixed(1)} mph</p>
+        <p>Wind Direction: ${degreesToCompass(
+          weatherData.current_weather.winddirection
+        )}</p>
     `
-  weatherDiv.appendChild(content)
-  var favoriteDiv = document.createElement('div');
-  favoriteDiv.className = 'fav-content'
-  favoriteDiv.innerHTML = `<h3>Favorite?</h3>`;
-  weatherDiv.appendChild(favoriteDiv);
+  weatherDataDiv.appendChild(content)
 
+  var favoriteDiv = document.createElement('div')
+  favoriteDiv.className = 'fav-content'
+
+  var awayTeamDiv = document.createElement('div')
+  var awayTeamPara = document.createElement('p')
+  var awayTeamButton = document.createElement('button')
+  var awayTeamImg = document.createElement('img')
+  var homeTeamDiv = document.createElement('div')
+  var homeTeamImg = document.createElement('img')
+  var homeTeamPara = document.createElement('p')
+  var homeTeamButton = document.createElement('button')
+  var homeTeamImg = document.createElement('img')
+
+  awayTeamImg.className = 'team-log'
+  awayTeamImg.src = teamData.awayTeamLogo
+  awayTeamImg.alt = teamData.awatTeam
+  awayTeamImg.style.width = '50px'
+  awayTeamImg.style.height = 'auto'
+
+  awayTeamButton.className = 'filter-button'
+  awayTeamButton.textContent = 'Favorite'
+
+  awayTeamButton.addEventListener('click', () => {
+    addTeamFavorite(teamData.awayTeam, awayTeamButton)
+  })
+  awayTeamDiv.className = 'Favorite-team-div'
+
+  awayTeamPara.textContent = teamData.awayTeam
+  awayTeamDiv.appendChild(awayTeamImg)
+  awayTeamDiv.appendChild(awayTeamPara)
+  awayTeamDiv.appendChild(awayTeamButton)
+  favoriteDiv.appendChild(awayTeamDiv)
+
+  homeTeamImg.className = 'team-log'
+  homeTeamImg.src = teamData.homeTeamLogo
+  homeTeamImg.alt = teamData.homeTeam
+  homeTeamImg.style.width = '50px'
+  homeTeamImg.style.height = 'auto'
+  homeTeamButton.className = 'filter-button'
+  homeTeamButton.textContent = 'Favorite'
+
+  var teamArray = await getFavoriteTeams()
+  teamArray = teamArray[0].split(',')
+  //Check if user already selected the team as a fav. If so disable button
+  if (teamArray.includes(teamData.homeTeam)) {
+    homeTeamButton.disabled = true
+    homeTeamButton.style.background = '#808080'
+  }
+  if (teamArray.includes(teamData.awayTeam)) {
+    awayTeamButton.disabled = true
+    awayTeamButton.style.background = '#808080'
+  }
+
+  homeTeamButton.addEventListener('click', () => {
+    addTeamFavorite(teamData.homeTeam, homeTeamButton)
+  })
+  homeTeamDiv.className = 'Favorite-team-div'
+  homeTeamPara.textContent = teamData.homeTeam
+  homeTeamDiv.appendChild(homeTeamImg)
+  homeTeamDiv.appendChild(homeTeamPara)
+  homeTeamDiv.appendChild(homeTeamButton)
+  favoriteDiv.appendChild(homeTeamDiv)
+
+  weatherDataDiv.appendChild(favoriteDiv)
+  weatherDiv.appendChild(weatherDataDiv)
 
   return weatherData
+}
+
+async function addTeamFavorite (teamName, teamButton) {
+  var userId = getCookie('userId')
+  var favArray = []
+  favArray = await getFavoriteTeams()
+  favArray = favArray[0].split(',')
+
+  if (favArray.length != 0) {
+    favArray.push(teamName)
+    if (updateFavoriteTeams(favArray, userId)) {
+      teamButton.disabled = true
+      teamButton.style.background = '#808080'
+    } else {
+      throw new Error('Failed to update Favorites')
+    }
+  } else {
+    // the user has no favorites saved.
+    if (insertNewFavTeam(teamName, userId)) {
+      teamButton.disabled = true
+      teamButton.style.background = '#808080'
+    }
+  }
+}
+
+async function getFavoriteTeams () {
+  var favs = getCookie('userFavs')
+  var favArray = []
+  // user doesnt have a favorite list
+  if (favs != null) {
+    favArray.push(favs)
+  } else {
+    console.log('getting favorite teams')
+    var result = await getFavoriteTeamsFromDb(userId)
+    console.log(result)
+    favArray.push(result.userFavs.teamName)
+  }
+
+  return favArray
+}
+
+async function insertNewFavTeam (teamName, userId) {
+  const res = await fetch('http://localhost:8080/newFav', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ userId, teamName })
+  })
+  const data = await res.json()
+  if (data.success == true) {
+    return true
+  } else {
+    return false
+  }
+}
+
+async function updateFavoriteTeams (userFavs, userId) {
+  const res = await fetch('http://localhost:8080/updateFav', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ userId, userFavs })
+  })
+  const data = await res.json()
+  if (data.success == true) {
+    return true
+  } else {
+    return false
+  }
+}
+async function getFavoriteTeamsFromDb (userId) {
+  const res = await fetch('http://localhost:8080/getFav', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ userId })
+  })
+  const data = await res.json()
+  return data
 }
 
 // Event listener for the "Get Events" button
@@ -235,7 +387,7 @@ document
       weatherBtn.className = 'filter-button'
 
       weatherBtn.addEventListener('click', () => {
-        getWeatherForEvent(event.address, event.date)
+        getWeatherForEvent(event.address, event.date, event)
       })
 
       eventsContainer.appendChild(eventDiv)
@@ -304,4 +456,11 @@ function formatDate (date, addDays) {
   const day = String(date.getDate() + addDays).padStart(2, '0')
 
   return `${year}${month}${day}`
+}
+
+// get cookie based on name
+function getCookie (name) {
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
 }
