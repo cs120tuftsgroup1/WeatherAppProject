@@ -39,33 +39,32 @@ async function startServer() {
         '.gif': 'image/gif',
         '.svg': 'image/svg+xml',
         '.ico': 'image/x-icon'
-      };
+      }
 
+      // Request wants to load home path
       if (path === '/') {
-        path = '/home.html';
-      } 
-      else if (path === '/favicon.ico') {
-        res.writeHead(204);
-        res.end();
-        return;
-      } 
+        path = '/home.html'
+      } else if (path === '/favicon.ico') {
+        res.writeHead(204)
+        res.end()
+        return
+      } else if (path === '/logMeIn' && req.method === 'POST') {
+        let body = ''
 
-      /* ---------- LOGIN ---------- */
-      else if (path === '/logMeIn' && req.method === 'POST') {
-        let body = '';
-
-        req.on('data', chunk => body += chunk.toString());
+        req.on('data', chunk => (body += chunk.toString()))
 
         req.on('end', async () => {
           try {
-            const { email, password } = JSON.parse(body);
-            const exists = await checkForUser(email, password);
+            const { email, password } = JSON.parse(body)
+
+            const exists = await checkForUser(email, password)
 
             if (exists) {
               const cookie = [
                 `userId=${exists}`,
                 'SameSite=Strict',
                 'Path=/',
+
                 'Max-Age=86400'
               ].join('; ');
 
@@ -232,6 +231,78 @@ async function startServer() {
         });
       }
 
+    
+
+
+      /* ----------------------------------
+         Save weather settings
+      -------------------------------------*/
+
+
+      else if (path === '/weather' && req.method === 'POST') {
+        let body = '';
+
+        req.on('data', chunk => body += chunk.toString());
+
+        req.on('end', async () => {
+          try {
+            const settings = JSON.parse(body);
+
+            const db = client.db("weatherApp");
+            const collection = db.collection("userSettings");
+
+            // Save or update settings for this user
+            await collection.updateOne(
+              { userID: settings.userID },
+              { $set: settings },
+              { upsert: true }
+            );
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
+          } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: false }));
+          }
+        });
+      }
+
+
+
+      /* ----------------------------------
+         Save weather settings
+      -------------------------------------*/
+
+      /* ----------------------------------
+               load weather settings
+            -------------------------------------*/
+      else if (path === '/weather' && req.method === 'GET') {
+        const userID = urlObj.query.userID;
+
+        try {
+          const db = client.db("weatherApp");
+          const collection = db.collection("userSettings");
+
+          const settings = await collection.findOne({ userID });
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(settings));
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(null));
+        }
+      }
+
+      /* ----------------------------------
+               load weather settings
+            -------------------------------------*/
+      else {
+        // Get the full path
+        const fullPath = __dirname + path
+        // Get the exetension
+        const extn = pathModule.extname(fullPath)
+
+
       /* ---------- STATIC FILES ---------- */
       else {
         const fullPath = __dirname + path;
@@ -263,51 +334,45 @@ async function startServer() {
     async function checkForUser (emailTofind, passwordToFind) {
       // Connect to database
 
-      // Get database
-      var db = client.db('weatherApp')
+  // Get database
+  var db = client.db('weatherApp')
 
-      // Get collection
-      var collection = db.collection('userData')
+  // Get collection
+  var collection = db.collection('userData')
 
-      //  Construct query
-      var query = { email: emailTofind, password: passwordToFind }
+  //  Construct query
+  var query = { email: emailTofind, password: passwordToFind }
 
-      // Run the query
-      var result = await collection.findOne(query)
+  // Run the query
+  var result = await collection.findOne(query)
 
-      // If result is null then the user does not exist.
-      if (result == null) return null
-      else {
-        return result._id
-      }
-    }
+  // If result is null then the user does not exist.
+  if (result == null) return null
+  else {
+    return result._id
+  }
+}
 
-    
+
 // Function to insert a new user into the database
-    async function insertUser (fullName, email, password) {
-      try {
-        // Get database
-        var db = client.db('weatherApp')
+async function insertUser(fullName, email, password) {
+  try {
+    // Get database
+    var db = client.db('weatherApp')
 
-        // Get collection
-        var collection = db.collection('userData')
+    // Get collection
+    var collection = db.collection('userData')
 
-        // Fill in new userData
-        var newData = { name: fullName, email: email, password: password }
+    // Fill in new userData
+    var newData = { name: fullName, email: email, password: password }
 
-        // Send the newData to the database
-        await collection.insertOne(newData, function (err, res) {
-          // Error handling for incase insert fails
-          if (err) {
-            return console.log(err)
-          }
-        })
-        // If insert is succsseful send message to console
-        console.log('A new user has been inserted into the database')
-      } catch (e) {
-        console.error(e)
-        return false; 
+    // Send the newData to the database
+    await collection.insertOne(newData, function (err, res) {
+      // Error handling for incase insert fails
+      if (err) {
+        return console.log(err)
       }
+
       return true;
     }
 
@@ -416,3 +481,4 @@ async function startServer() {
    }
 
     startServer();
+
