@@ -2,6 +2,16 @@ import { getTodayWeather, getWeatherForCoords } from "./weatherHelper.js";
 import { getNextGame } from "./sportsHelper.js";
 
 /* ----------------------------------
+   GET COOKIES
+-------------------------------------*/
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+
+/* ----------------------------------
    LOAD USER PROFILE
 -------------------------------------*/
 function loadProfile() {
@@ -156,6 +166,67 @@ async function loadNextGamesWeather() {
 }
 
 /* ----------------------------------
+   Save weather settings
+-------------------------------------*/
+async function saveSettings() {
+  const userId = getCookie("userId"); // get from cookie
+  if (!userId) return alert("Not logged in!");
+
+  const forecastDays = document.getElementById("forecast-days").value;
+
+  const weatherSettings = {
+    userID: userId, // use cookie value
+    "7-day": forecastDays === "7" ? 1 : 0,
+    "10-day": forecastDays === "10" ? 1 : 0,
+    WindDirection: document.getElementById("show-wind-Direction").checked ? 1 : 0,
+    WindSpeed: document.getElementById("show-wind-Speed").checked ? 1 : 0,
+    Icons: document.getElementById("show-icon").checked ? 1 : 0,
+    Celcius: document.getElementById("temperature-unit").value === "celcius" ? 1 : 0
+  };
+
+  try {
+    const res = await fetch("/weather", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(weatherSettings)
+    });
+
+    if (!res.ok) throw new Error();
+    alert("Settings saved!");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to save settings");
+  }
+}
+
+/* ----------------------------------
+   Load weather settings
+-------------------------------------*/
+async function loadSettings() {
+  const userId = getCookie("userId");
+  if (!userId) return;
+
+  try {
+    const res = await fetch(`/weather?userID=${userId}`);
+    const settings = await res.json();
+    if (!settings) return;
+
+    document.getElementById("show-icon").checked = settings.Icons === 1;
+    document.getElementById("show-wind-Direction").checked = settings.WindDirection === 1;
+    document.getElementById("show-wind-Speed").checked = settings.WindSpeed === 1;
+
+    document.getElementById("forecast-days").value =
+      settings["7-day"] === 1 ? "7" : "10";
+
+    document.getElementById("temperature-unit").value =
+      settings.Celcius === 1 ? "celcius" : "Fahrenheit";
+  } catch (err) {
+    console.error("Failed to load settings", err);
+  }
+}
+
+
+/* ----------------------------------
    LOGOUT
 -------------------------------------*/
 document.getElementById("logout-btn").addEventListener("click", () => {
@@ -171,4 +242,9 @@ window.addEventListener("DOMContentLoaded", () => {
   loadFavoriteTeams();
   loadLocalWeather();
   loadNextGamesWeather();
+  loadSettings();
+
+  document
+    .getElementById("save-settings-btn")
+    .addEventListener("click", saveSettings);
 });
