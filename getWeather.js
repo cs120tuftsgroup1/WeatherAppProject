@@ -2,7 +2,7 @@
 const temp = "C";
 const wind = true;        // Show wind speed
 const direction = true;   // Show wind direction
-
+const showIcons = true;
 const weatherBtn = document.querySelector("#get-weather-button");
 
 if (weatherBtn) {
@@ -93,22 +93,19 @@ if (weatherBtn) {
       const windDirections = weatherData.daily.winddirection_10m_dominant;
 
       let html = `
-        <div class="current">
-          <h3>Current Weather in ${city}</h3>
-          <div class="current-day">
-            <strong>Now</strong>
-            <div class="icon">
-              <img src="${currentWeatherIcon}" alt="Current Weather Icon">
-            </div>
-            High: ${currentTemp} ${temperatureUnit}<br>
-            ${wind ? `Wind: ${currentWindMph} mph <br>
-            ${direction ? " from " + currentDirection : ""}` : ""}
-            </div>
-        </div>
+                <div class="current">
+                    <h3>Current Weather in ${city}</h3>
+                    <div class="current-day">
+                        <strong>Now</strong>
+                        ${showIcons ? `<div class="icon"><img src="${currentWeatherIcon}" alt="Current Weather Icon"></div>` : ""}
+                        High: ${currentTemp} ${temperatureUnit}<br>
+                        ${wind ? `Wind: ${currentWindMph} mph ${direction ? " from " + currentDirection : ""}` : ""}
+                    </div>
+                </div>
 
-        <h3 class="forecast-title">7-Day Forecast</h3>
-        <div class="forecast-grid">
-      `;
+                <h3 class="forecast-title">7-Day Forecast</h3>
+                <div class="forecast-grid">
+            `;
 
       for (let i = 0; i < 7; i++) {
         const maxT = formatTemp(maxTemps[i]);
@@ -120,18 +117,15 @@ if (weatherBtn) {
         const icon = getWeatherIcon(weatherCodes[i]);
 
         html += `
-          <div class="day">
-            <strong>${days[i]}</strong>
-            <div class="icon">
-              <img src="${icon}" alt="Weather icon">
-            </div>
-            High: ${maxT} ${temperatureUnit} (Feels like ${feelsMax} ${temperatureUnit})<br>
-            Low: ${minT} ${temperatureUnit} (Feels like ${feelsMin} ${temperatureUnit})<br>
-            ${wind ? `Wind: ${windMph} mph <br>
-            ${direction ? " from " + windDir : ""}` : ""}
-          </div>
-        `;
-      }
+                    <div class="day">
+                        <strong>${days[i]}</strong>
+                        ${showIcons ? `<div class="icon"><img src="${icon}" alt="Weather icon"></div>` : ""}
+                        High: ${maxT} ${temperatureUnit} (Feels like ${feelsMax} ${temperatureUnit})<br>
+                        Low: ${minT} ${temperatureUnit} (Feels like ${feelsMin} ${temperatureUnit})<br>
+                        ${wind ? `Wind: ${windMph} mph ${direction ? " from " + windDir : ""}` : ""}
+                    </div>
+                `;
+            }
 
       html += `</div>`;
       document.getElementById('weather').innerHTML = html;

@@ -41,6 +41,45 @@
       <div id="next-games-container">Loading...</div>
     </section>
 
+    <!-- Weather Settings -->
+<section class="settings-section">
+  <h2>Weather Settings</h2>
+
+  <label>
+    <input type="checkbox" id="show-icon" />
+    Show Weather Icons
+  </label> <br>
+
+  <label>
+    <input type="checkbox" id="show-wind-Direction" />
+    Show Wind Direction
+  </label> <br>
+
+  <label>
+    <input type="checkbox" id="show-wind-Speed" />
+    Show Wind Speed
+  </label> <br>
+
+  <label>
+    Forecast length:
+    <select id="forecast-days">
+      <option value="7">7-Day Forecast</option>
+      <option value="10">10-Day Forecast</option>
+    </select>
+  </label> <br>
+
+  <label>
+    Temperature Unit:
+    <select id="temperature-unit">
+      <option value="celcius">Celcius</option>
+      <option value="Fahrenheit">Fahrenheit</option>
+    </select>
+  </label>
+  <br>
+
+  <button id="save-settings-btn" class="btn">Save Settings</button>
+</section>
+
     <button id="logout-btn" class="logout-btn">Log Out</button>
 
   </div>
