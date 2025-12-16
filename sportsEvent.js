@@ -4,11 +4,10 @@ import { degreesToCompass } from './getWeather.js'
 // Map sports to their respective leagues
 const leaguesBySport = new Map([
   ['Basketball', ['NBA']],
-  ['Football', ['UFL', 'NFL']],
+  ['Football', ['NFL']],
   ['Baseball', ['MLB']],
   ['Hockey', ['NHL']],
-  [
-    'Soccer',
+  ['Soccer',
     [
       'MLS',
       'English Premier League',
@@ -24,7 +23,6 @@ const leaguesBySport = new Map([
 // Map league names to their abbreviations used in the API
 var abrvByLeague = new Map([
   ['NBA', 'nba'],
-  ['UFL', 'ufl'],
   ['NFL', 'nfl'],
   ['MLB', 'mlb'],
   ['NHL', 'nhl'],
@@ -93,7 +91,7 @@ function closeWeatherWindow () {
   weatherDiv.innerHTML = ``
 }
 
-async function getWeatherForEvent (address, date, teamData) {
+async function getWeatherForEvent (address, date, teamData, league) {
   var weatherDiv = document.getElementById('weather-data-screen')
   weatherDiv.style.display = 'flex'
 
@@ -202,7 +200,7 @@ async function getWeatherForEvent (address, date, teamData) {
   awayTeamButton.textContent = 'Favorite'
 
   awayTeamButton.addEventListener('click', () => {
-    addTeamFavorite(teamData.awayTeam, awayTeamButton)
+    addTeamFavorite(teamData.awayTeamId, league, awayTeamButton)
   })
   awayTeamDiv.className = 'Favorite-team-div'
 
@@ -221,19 +219,22 @@ async function getWeatherForEvent (address, date, teamData) {
   homeTeamButton.textContent = 'Favorite'
 
   var teamArray = await getFavoriteTeams()
-  teamArray = teamArray[0].split(',')
-  //Check if user already selected the team as a fav. If so disable button
-  if (teamArray.includes(teamData.homeTeam)) {
-    homeTeamButton.disabled = true
-    homeTeamButton.style.background = '#808080'
+  // Double check we have a fav Array to split
+  if(Array.isArray(teamArray) && teamArray.length > 0) 
+  {
+    console.log(teamArray);
+    //Check if user already selected the team as a fav. If so disable button
+    if (teamArray.find(team => team.teamId == teamData.homeTeamId)) {
+        homeTeamButton.disabled = true
+        homeTeamButton.style.background = '#808080'
+    }
+    if (teamArray.includes(teamArray.find(team => team.teamId == teamData.awayTeamId))) {
+        awayTeamButton.disabled = true
+        awayTeamButton.style.background = '#808080'
+    }
   }
-  if (teamArray.includes(teamData.awayTeam)) {
-    awayTeamButton.disabled = true
-    awayTeamButton.style.background = '#808080'
-  }
-
   homeTeamButton.addEventListener('click', () => {
-    addTeamFavorite(teamData.homeTeam, homeTeamButton)
+    addTeamFavorite(teamData.homeTeamId,league, homeTeamButton)
   })
   homeTeamDiv.className = 'Favorite-team-div'
   homeTeamPara.textContent = teamData.homeTeam
@@ -248,51 +249,69 @@ async function getWeatherForEvent (address, date, teamData) {
   return weatherData
 }
 
-async function addTeamFavorite (teamName, teamButton) {
-  var userId = getCookie('userId')
-  var favArray = []
-  favArray = await getFavoriteTeams()
-  favArray = favArray[0].split(',')
+// MAIN FUNCTION TO ADD FAVORITES
+async function addTeamFavorite (teamId,league, teamButton) {
+  var userId = getCookie('userId');
 
-  if (favArray.length != 0) {
-    favArray.push(teamName)
+  let favArray = await getFavoriteTeams() || [];
+ 
+  console.log("FAV ARRAY", favArray);
+  if (Array.isArray(favArray) && favArray.length > 0) {
+    var newTeam = {teamId: teamId, league: league}
+    favArray.push(newTeam);
+    console.log("After new team added ",favArray);
+    console.log('updating favs');
+
     if (updateFavoriteTeams(favArray, userId)) {
       teamButton.disabled = true
       teamButton.style.background = '#808080'
+      alert("The team has been added as a favorite");
     } else {
       throw new Error('Failed to update Favorites')
     }
   } else {
+      console.log('inserting favs');
     // the user has no favorites saved.
-    if (insertNewFavTeam(teamName, userId)) {
+    if (insertNewFavTeam({teamId: teamId, league: league}, userId)) {
       teamButton.disabled = true
       teamButton.style.background = '#808080'
+      alert("The team has been added as a favorite");
     }
   }
 }
 
 async function getFavoriteTeams () {
+  var userId = getCookie('userId')
   var favs = getCookie('userFavs')
   var favArray = []
   // user doesnt have a favorite list
-  if (favs != null) {
-    favArray.push(favs)
+  if ( favs != null && favs != '') {
+    const parsed = JSON.parse(favs); 
+   // ensure it is an array
+    if (Array.isArray(parsed)) {
+      favArray.push(...parsed); // safe to spread
+    } else if (parsed) {
+      favArray.push(parsed); // single object, just push it
+    }
   } else {
     console.log('getting favorite teams')
     var result = await getFavoriteTeamsFromDb(userId)
     console.log(result)
-    favArray.push(result.userFavs.teamName)
+   
+      if (result?.userFavs?.length) {
+      favArray = result.userFavs.map(team => JSON.parse(team))
+    }
+    
   }
-
   return favArray
 }
 
-async function insertNewFavTeam (teamName, userId) {
+async function insertNewFavTeam (teamInfo, userId) {
   const res = await fetch('http://localhost:8080/newFav', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
-    body: JSON.stringify({ userId, teamName })
+    body: JSON.stringify({ userId, teamInfo })
   })
   const data = await res.json()
   if (data.success == true) {
@@ -327,6 +346,49 @@ async function getFavoriteTeamsFromDb (userId) {
   return data
 }
 
+document.getElementById('getFavorites-btn').addEventListener('click', async function (event){
+    
+    event.preventDefault();
+    var eventsContainer = document.getElementById('events-container')
+      eventsContainer.innerHTML = '' // Clear previous results
+      var sportsData = [];
+    var userFavs =getCookie('userFavs');
+    // Check if the user has the userFav cookie already saved.
+    if( userFavs == null)
+    {   
+      //Check if they have any saved favorites in the database
+      if(await getFavoriteTeamsFromDb().length == 0)
+      {
+            var eventsContainer = document.getElementById('events-container');
+            eventsContainer.innerHTML = `<h2> You have no Favorite Teams </h2>`
+      }  
+    }    
+    else
+    {
+      
+      userFavs = JSON.parse(userFavs);
+      var todaysDate = new Date()
+      todaysDate = formatDate(todaysDate, 0)
+      var dateInAWeek = new Date()
+      dateInAWeek = formatDate(dateInAWeek, 7)
+      console.log("userFavs converted ",userFavs )
+   for (const team of userFavs) {
+        const sportFound = Array.from(leaguesBySport.entries())
+        .find(([sport, leagues]) => leagues.includes(team.league.toUpperCase()))?.[0];
+
+          const response = await fetch(
+          `https://site.api.espn.com/apis/site/v2/sports/${sportFound.toLowerCase()}/${team.league}/teams/${team.teamId}?dates=${todaysDate}-${dateInAWeek}`);
+
+           const data = await response.json()
+      
+         var sportObject = formatTeamObject(data, team.league);
+         sportsData.push(sportObject);
+      }
+      console.log(sportsData);
+      displaySportData(sportsData);
+    }
+});
+
 // Event listener for the "Get Events" button
 document
   .getElementById('get-events-btn')
@@ -348,13 +410,20 @@ document
     console.log('Lowercase sport:', sportLower)
 
     // Clear previous results
-    var eventsContainer = document.getElementById('events-container')
-    eventsContainer.innerHTML = '' // Clear previous results
-
+    
     // Fetch sports event data
     var eventData = await getSportsEventData(sportLower, league)
     console.log('Event data length:', eventData.length)
     console.log('Data received:', eventData)
+    displaySportData(eventData);
+    
+  })
+
+  function displaySportData(eventData)
+  {
+    console.log(eventData);
+    var eventsContainer = document.getElementById('events-container')
+    eventsContainer.innerHTML = '' // Clear previous results
 
     // Display each event
     eventData.forEach(event => {
@@ -387,24 +456,27 @@ document
       weatherBtn.className = 'filter-button'
 
       weatherBtn.addEventListener('click', () => {
-        getWeatherForEvent(event.address, event.date, event)
+        getWeatherForEvent(event.address, event.date, event, event.league)
       })
 
       eventsContainer.appendChild(eventDiv)
       eventDiv.appendChild(weatherBtn)
     })
-  })
+  }
 
 // Sports Event class
 class SportsEvent {
   constructor (awayTeam, homeTeam, awayTeamLogo, homeTeamLogo, location, date) {
+    this.awayTeamId = null;
     this.awayTeam = awayTeam
     this.awayTeamLogo = awayTeamLogo
     this.homeTeamLogo = homeTeamLogo
     this.homeTeam = homeTeam
+    this.homeTeamId = null;
     this.loction = location
     this.date = date
     this.address = null
+    this.league = null
   }
 }
 
@@ -422,31 +494,75 @@ async function getSportsEventData (sport, league) {
   )
   const data = await response.json()
   console.log('Raw data from API:', data.events.length)
+  sportsData = formatSportsObject(data,league);
+  return sportsData;
+}
 
+function formatSportsObject(data, league)
+{ 
+  var sportsData =[];
   data.events.forEach(eventJson => {
     var event = new SportsEvent(null, null, null, null, null, null)
 
     // Determine who is the home team and who is the away team
     if (eventJson.competitions[0].competitors[0].homeAway === 'home') {
-      event.awayTeam = eventJson.competitions[0].competitors[1].team.displayName
-      event.awayTeamLogo = eventJson.competitions[0].competitors[1].team.logo
-      event.homeTeamLogo = eventJson.competitions[0].competitors[0].team.logo
-      event.homeTeam = eventJson.competitions[0].competitors[0].team.displayName
+      event.awayTeamId = eventJson.competitions[0].competitors[1].team.id;
+      event.awayTeam = eventJson.competitions[0].competitors[1].team.displayName;
+      event.awayTeamLogo = eventJson.competitions[0].competitors[1].team.logo;
+      event.homeTeamId =   eventJson.competitions[0].competitors[0].team.id;
+      event.homeTeamLogo = eventJson.competitions[0].competitors[0].team.logo;
+      event.homeTeam = eventJson.competitions[0].competitors[0].team.displayName;
     } else {
-      event.awayTeam = eventJson.competitions[0].competitors[0].team.displayName
-      event.awayTeamLogo = eventJson.competitions[0].competitors[0].team.logo
-      event.homeTeamLogo = eventJson.competitions[0].competitors[1].team.logo
-      event.homeTeam = eventJson.competitions[0].competitors[1].team.displayName
+      event.awayTeamId = eventJson.competitions[0].competitors[0].team.id;
+      event.awayTeam = eventJson.competitions[0].competitors[0].team.displayName;
+      event.awayTeamLogo = eventJson.competitions[0].competitors[0].team.logo;
+      event.homeTeamId = eventJson.competitions[0].competitors[1].team.id;
+      event.homeTeamLogo = eventJson.competitions[0].competitors[1].team.logo;
+      event.homeTeam = eventJson.competitions[0].competitors[1].team.displayName;
     }
 
-    event.location = eventJson.competitions[0].venue.fullName
-    event.date = eventJson.date
-    event.address = eventJson.competitions[0].venue.address
-
+    event.location = eventJson.competitions[0].venue.fullName;
+    event.date = eventJson.date;
+    event.address = eventJson.competitions[0].venue.address;
+    event.league = league;
     sportsData.push(event)
   })
 
   return sportsData
+}
+
+function formatTeamObject(eventJson, league)
+{
+    var sportsData = [];
+   var event = new SportsEvent(null, null, null, null, null, null)
+    const nextEvent = eventJson.team.nextEvent?.[0];
+    const competitors = nextEvent?.competitions?.[0]?.competitors;
+    if(competitors && competitors.length >= 2)
+    {
+      // Determine who is the home team and who is the away team
+      if (competitors[0].homeAway === 'home') {
+        event.awayTeamId   = competitors[1].team?.id;
+        event.awayTeam     = competitors[1].team?.displayName;
+        event.awayTeamLogo = competitors[1].team?.logos[0].href;
+        event.homeTeamId   = competitors[0].team?.id;
+        event.homeTeamLogo = competitors[0].team?.logos[0].href;
+        event.homeTeam     = competitors[0].team?.displayName;
+      } else {
+        event.awayTeamId   = competitors[0].team?.id;
+        event.awayTeam     = competitors[0].team?.displayName;
+        event.awayTeamLogo = competitors[0].team?.logos[0].href;
+        event.homeTeamId   = competitors[1].team?.id;
+        event.homeTeamLogo = competitors[1].team?.logos[0].href;
+        event.homeTeam     = competitors[1].team?.displayName;
+      }
+    }
+    event.location = nextEvent.competitions[0].venue.fullName;
+    event.date = nextEvent.date;
+    event.address = nextEvent.competitions[0].venue.address;
+    event.league = league;
+    console.log(event);
+
+    return event;
 }
 
 // Helper function to format date as YYYYMMDD

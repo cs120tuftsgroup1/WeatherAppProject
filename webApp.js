@@ -134,7 +134,7 @@ async function startServer() {
             if(result == 1)
             {
               const favCookie = [
-                  `userFavs=${userFavs}`,
+                  `userFavs=${JSON.stringify(userFavs)}`,
                   'SameSite=Strict',
                   'Path=/',
                   'Max-Age=86400'
@@ -168,11 +168,11 @@ async function startServer() {
          req.on('data', chunk => body += chunk.toString());
 
         req.on('end', async () => {
-          const {teamName, userId} = JSON.parse(body);
-          if((await insertNewFavDb(teamName, userId)).acknowledged == true)
+          const {teamInfo, userId} = JSON.parse(body);
+          if((await insertNewFavDb(teamInfo, userId)).acknowledged == true)
           {
             const favCookie = [
-                  `userFavs=${teamName}`,
+                  `userFavs= ${JSON.stringify(teamInfo)}`,
                   'SameSite=Strict',
                   'Path=/',
                   'Max-Age=86400'
@@ -390,7 +390,7 @@ async function startServer() {
     return result.modifiedCount;
    }
 
-   async function insertNewFavDb(teamName, userId)
+   async function insertNewFavDb(teamInfo, userId)
    {
     try{
       // Get database
@@ -401,7 +401,7 @@ async function startServer() {
 
       const userID = new ObjectId(userId);
       const teamNameArr = [];
-      teamNameArr.push(teamName);
+      teamNameArr.push(teamInfo);
       var newData = {userId:userID, favorites:  teamNameArr}
 
       const result = await collection.insertOne(newData);
