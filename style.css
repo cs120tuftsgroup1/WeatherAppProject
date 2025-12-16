@@ -237,3 +237,23 @@ header.site-logo .logo {
     border-radius: 50%;
     object-fit: cover;
 }
+
+.weather-data-screen-class{
+    display: none;
+    position: fixed;
+    top: 30%;
+    left: 10%;
+    right:10%;
+    background-color: #fff;
+    border: 1px solid #000;
+    border-radius: 5px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    width: auto;
+    height:auto;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+    z-index: 100;
+    font-family:  Helvetica, sans-serif;
+}

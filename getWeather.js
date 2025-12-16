@@ -164,8 +164,8 @@ function getWeatherIcon(code) {
   if (code >= 95) return "pics/thunderStorm.png";
 }
 
-
-function degreesToCompass(deg) {
+/* ---------- WIND DIRECTION ---------- */
+export function degreesToCompass(deg) {
   if (deg >= 315 || deg < 45) return "North";
   if (deg < 135) return "East";
   if (deg < 225) return "South";
