@@ -1,21 +1,50 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="./style.css">
-    </head>
-    <body>
-        <h1>Account Page</h1>
-        
-        <script type="module" src="./layers.js"></script>
-        <script type="module" src="account.js"></script>
-    </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Your Account</title>
+  <link rel="stylesheet" href="./auth.css">
+  <link rel="stylesheet" href="./account.css">
+</head>
+
+<body>
+ 
+  <div class="account-container">
+    
+    <h1>Your Account</h1>
+
+    <!-- Profile -->
+    <section class="profile-section">
+      <h2>Profile</h2>
+      <p><strong>Username:</strong> <span id="username">Loading...</span></p>
+      <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+    </section>
+
+    <!-- Favorite Teams -->
+    <section class="favorites-section">
+      <h2>Favorite Teams</h2>
+      <ul id="favorite-teams"></ul>
+
+      <input id="team-input" placeholder="Add a team..." />
+      <button id="add-team-btn" class="btn">Add Team</button>
+    </section>
+
+    <!-- Local Weather -->
+    <section class="weather-section">
+      <h2>Your Local Weather</h2>
+      <div id="weather-box">Loading weather...</div>
+    </section>
+
+    <!-- Next Games Weather -->
+    <section>
+      <h2>Next Game Forecasts</h2>
+      <div id="next-games-container">Loading...</div>
+    </section>
+
+    <button id="logout-btn" class="logout-btn">Log Out</button>
+
+  </div>
+
+  <script type="module" src="./account.js"></script>
+</body>
 </html>
