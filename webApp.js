@@ -5,7 +5,7 @@ var fs = require('fs')
 var pathModule = require('path')
 const path = require('path')
 
-const { MongoClient, ServerApiVersion } = require('mongodb')
+const { MongoClient, ServerApiVersion,ObjectId } = require('mongodb')
 const uri =
   'mongodb+srv://ngasto01_db_user:test123@weatherappcluster.bzidb06.mongodb.net/?appName=weatherAppCluster'
 
@@ -22,12 +22,11 @@ async function startServer() {
   try {
     await client.connect();
     console.log("MongoDB connected");
+
     const server = http.createServer(function (req, res) {
-      urlObj = url.parse(req.url, true)
-      let path = urlObj.pathname
+      const urlObj = url.parse(req.url, true);
+      let path = urlObj.pathname;
 
-
-      // MIME types
       const mimeTypes = {
         '.html': 'text/html',
         '.css': 'text/css',
@@ -65,68 +64,174 @@ async function startServer() {
                 `userId=${exists}`,
                 'SameSite=Strict',
                 'Path=/',
-                'Max-Age=86400' // 1 day
-                // 'Secure' // enable in production with HTTPS
-              ].join('; ')
-              res.writeHead(
-                200,
-                { 'Content-Type': 'application/json' },
-                { 'Set-Cookie': cookie }
-              )
-              res.end(
-                JSON.stringify({
-                  success: true,
-                  id: exists,
-                  message: 'Login successful'
-                })
-              )
-            } else {
-              res.end(
-                JSON.stringify({
-                  message: 'Invalid email or password'
-                })
-              )
-            }
-          } catch (err) {
-            res.end(JSON.stringify({ success: false, message: 'Bad request' }))
-          }
-        })
-      } else if (path === '/signUp' && req.method === 'POST') {
-        let body = ''
 
-        req.on('data', chunk => (body += chunk.toString()))
+                'Max-Age=86400'
+              ].join('; ');
+
+              res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Set-Cookie': cookie
+              });
+
+              res.end(JSON.stringify({
+                success: true,
+                id: exists,
+                message: 'Login successful'
+              }));
+            }
+          } catch (e) {
+            res.writeHead(500);
+            res.end();
+          }
+        });
+      }
+
+      /* ---------- GET FAVORITES ---------- */
+      else if (path === '/getFav' && req.method === 'POST') {
+        let body = '';
+
+        req.on('data', chunk => body += chunk.toString());
+
+        req.on('end', async () => {
+          try {
+          const { userId } = JSON.parse(body);
+            const favs = await getFavsFromDb(userId);
+
+            const favCookie = [
+                `userFavs=${favs || []}`,
+                'SameSite=Strict',
+                'Path=/',
+                'Max-Age=86400'
+            ].join('; ');
+
+            res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Set-Cookie': favCookie
+            });
+
+            res.end(JSON.stringify({
+                userFavs: favs || []
+            }));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Server error' }));
+        }
+        });
+      }
+
+      /* ----------- UPDATE FAVS --------------- */
+      else if(path === '/updateFav' && req.method === 'POST')
+      {
+          let body = '';
+          req.on('data', chunk => body += chunk.toString());
+
+          req.on('end', async () => {
+            
+            const userFavsUpdate = {userId,userFavs} = JSON.parse(body);
+            result = await updateFavsDb(userFavsUpdate.userFavs, userId);
+            console.log(result);
+            if(result == 1)
+            {
+              const favCookie = [
+                  `userFavs=${JSON.stringify(userFavs)}`,
+                  'SameSite=Strict',
+                  'Path=/',
+                  'Max-Age=86400'
+              ].join('; ');
+
+              res.writeHead(200, {
+                  'Content-Type': 'application/json',
+                  'Set-Cookie': favCookie
+              });
+               res.end(JSON.stringify({
+                success: true
+            }));  
+            }
+            else
+            {
+               res.writeHead(200, {
+                  'Content-Type': 'application/json'
+              });
+              res.end(JSON.stringify({
+                success: false
+            }))
+            }
+          });
+          
+      }
+
+      /*------------NEW FAV------------- */
+      else if(path === '/newFav' && req.method === 'POST')
+      {
+        let body = '';
+         req.on('data', chunk => body += chunk.toString());
+
+        req.on('end', async () => {
+          const {teamInfo, userId} = JSON.parse(body);
+          if((await insertNewFavDb(teamInfo, userId)).acknowledged == true)
+          {
+            const favCookie = [
+                  `userFavs= ${JSON.stringify(teamInfo)}`,
+                  'SameSite=Strict',
+                  'Path=/',
+                  'Max-Age=86400'
+              ].join('; ');
+
+              res.writeHead(200, {
+                  'Content-Type': 'application/json',
+                  'Set-Cookie': favCookie
+              });
+               res.end(JSON.stringify({
+                success: true
+            }));  
+          }
+          else
+          {
+            res.writeHead(200, {
+                  'Content-Type': 'application/json',
+              });
+               res.end(JSON.stringify({
+                success: false
+            }));  
+          }
+
+        });
+      }
+
+      /* ---------- SIGN UP ---------- */
+      else if (path === '/signUp' && req.method === 'POST') {
+        let body = '';
+
+        req.on('data', chunk => body += chunk.toString());
+
         req.on('end', async () => {
           try {
             if (await !checkUserExists(JSON.parse(body).email)) {
               console.log("User already exists");
               throw new Error('User already exists');
             }
-            else {
-              // Basic validation
-              if (!JSON.parse(body).email.includes('@') && !JSON.parse(body).email.includes('.')) {
-                throw new Error('Invalid email format');
-              }
-              else if (JSON.parse(body).password.length < 6) {
-                throw new Error('Password too short');
-              }
-            }
 
-            const { username, email, password } = JSON.parse(body)
+            const { username, email, password } = JSON.parse(body);
+
             if (await !insertUser(username, email, password)) {
               throw new Error('Failed to insert user');
             }
-            res.writeHead(200, { 'Content-Type': 'application/json' })
-            res.end(
-              JSON.stringify({
-                success: true,
-                message: 'User registered successfully'
-              })
-            );
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+              success: true,
+              message: 'User registered successfully'
+            }));
           } catch (err) {
-            res.end(JSON.stringify({ success: false, message: err.message }));
+            res.end(JSON.stringify({
+              success: false,
+              message: err.message
+            }));
           }
-        })
+        });
       }
+
+    
 
 
       /* ----------------------------------
@@ -197,33 +302,37 @@ async function startServer() {
         // Get the exetension
         const extn = pathModule.extname(fullPath)
 
-        // Set the correct content type
-        const contentType = mimeTypes[extn] || 'text/plain'
+
+      /* ---------- STATIC FILES ---------- */
+      else {
+        const fullPath = __dirname + path;
+        const extn = pathModule.extname(fullPath);
+        const contentType = mimeTypes[extn] || 'text/plain';
 
         fs.readFile(fullPath, function (err, content) {
           if (err) {
-            res.writeHead(404, { 'Content-Type': 'text/plain' })
-            return res.end('File not found')
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
+            return res.end('File not found');
           }
-          res.writeHead(200, { 'Content-Type': contentType })
-          res.end(content)
-        })
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(content);
+        });
       }
     });
-    // If on local port use 8080, if deployed use system port
-    const PORT = process.env.PORT || 8080
+
+    const PORT = process.env.PORT || 8080;
     server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`)
-    })
+      console.log(`Server running on port ${PORT}`);
+    });
+
   } catch (e) {
     console.error(e);
   }
-
-
 }
-// Check if a userExists
-async function checkForUser(emailTofind, passwordToFind) {
-  // Connect to database
+
+    // Check if a userExists
+    async function checkForUser (emailTofind, passwordToFind) {
+      // Connect to database
 
   // Get database
   var db = client.db('weatherApp')
@@ -263,57 +372,113 @@ async function insertUser(fullName, email, password) {
       if (err) {
         return console.log(err)
       }
-    })
-    // If insert is succsseful send message to console
-    console.log('A new user has been inserted into the database')
-  } catch (e) {
-    console.error(e)
-    return false;
-  }
-  return true;
-}
 
-// Check if a userExists
-async function checkForUser(emailTofind, passwordToFind) {
-  // Get database
-  var db = client.db("weatherApp");
+      return true;
+    }
 
-  // Get collection 
-  var collection = db.collection("userData");
+    // Check if a userExists
+    async function checkForUser(emailTofind, passwordToFind)
+    {
+        // Get database
+        var db = client.db("weatherApp");
+        
+        // Get collection 
+        var collection = db.collection("userData");
+    
+        //  Construct query
+        var query = {email:emailTofind , password: passwordToFind};
+    
+        // Run the query 
+        var result = await collection.findOne(query);
+    
+        // If result is null then the user does not exist.
+       if( result == null ) return null;
+       else{
+        return result._id;
+       }
+           
+    }
 
-  //  Construct query
-  var query = { email: emailTofind, password: passwordToFind };
+     // Check if a userExists
+    async function checkUserExists(emailTofind)
+    {
+        // Get database
+        var db = client.db("weatherApp");
+        
+        // Get collection 
+        var collection = db.collection("userData");
+    
+        //  Construct query
+        var query = {email:emailTofind };
+    
+        // Run the query 
+        var result = await collection.findOne(query); 
+    
+        // If result is null then the user does not exist.
+        return result != null;
+           
+    }
+    async function getFavsFromDb(userId)
+    {
+      try{
+       // Get database
+        var db = client.db("weatherApp");
+        
+        // Get collection 
+        var collection = db.collection("sportsSettings");
+    
+        //  Construct query
+        var query = { userID: new ObjectId(userId) };
+        var result = await collection.findOne(query); 
+      return result?.favorites || [];
+    } catch (err) {
+        console.error("Error fetching favorites:", err);
+        throw err; // Let the caller handle it
+    }
+    }
 
-  // Run the query 
-  var result = await collection.findOne(query);
+   async function updateFavsDb(userFavsUpdate, userId)
+   {
 
-  // If result is null then the user does not exist.
-  if (result == null) return null;
-  else {
-    return result._id;
-  }
+    // Get database
+    var db = client.db("weatherApp");
+    
+    // Get collection 
+    var collection = db.collection("sportsSettings");
 
-}
+    console.log(userId);
+   result = await collection.updateOne(
+  { userId: new ObjectId(userId) },
+  { $set: { favorites: userFavsUpdate } },
+  { upsert: false }
+);
+    return result.modifiedCount;
+   }
 
-// Check if a userExists
-async function checkUserExists(emailTofind) {
-  // Get database
-  var db = client.db("weatherApp");
+   async function insertNewFavDb(teamInfo, userId)
+   {
+    try{
+      // Get database
+      var db = client.db("weatherApp");
+    
+      // Get collection 
+      var collection = db.collection("sportsSettings");
 
-  // Get collection 
-  var collection = db.collection("userData");
+      const userID = new ObjectId(userId);
+      const teamNameArr = [];
+      teamNameArr.push(teamInfo);
+      var newData = {userId:userID, favorites:  teamNameArr}
 
-  //  Construct query
-  var query = { email: emailTofind };
+      const result = await collection.insertOne(newData);
 
-  // Run the query 
-  var result = await collection.findOne(query);
+      return result;
+    }
+    catch (err) {
+        console.error("Error fetching favorites:", err);
+        throw err; // Let the caller handle it
+    }
 
-  // If result is null then the user does not exist.
-  return result != null;
+   }
 
-}
+    startServer();
 
-
-
-startServer();
