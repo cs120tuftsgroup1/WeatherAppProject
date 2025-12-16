@@ -136,22 +136,14 @@ async function startServer() {
 
       else if (path === '/weather' && req.method === 'POST') {
         let body = '';
+        const userWeatherUpdate = { weatherSettings, userId } = JSON.parse(body);
 
         req.on('data', chunk => body += chunk.toString());
 
         req.on('end', async () => {
           try {
-            const settings = JSON.parse(body);
 
-            const db = client.db("weatherApp");
-            const collection = db.collection("userSettings");
-
-            // Save or update settings for this user
-            await collection.updateOne(
-              { userID: settings.userID },
-              { $set: settings },
-              { upsert: true }
-            );
+            saveWeather(userWeatherUpdate);
 
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: true }));
@@ -311,6 +303,35 @@ async function checkUserExists(emailTofind) {
 
   // If result is null then the user does not exist.
   return result != null;
+
+}
+
+
+async function saveWeather(userSettings) {
+  // Get database
+  try {
+    var db = client.db("weatherApp");
+
+    // Get collection 
+    var collection = db.collection("weatherSettings");
+
+    var userIdObject = new Object(userSettings.userId)
+    //  Construct query
+    var query = { userID: userIdObject, settings: userSettings.weatherSettings };
+
+    collection.insertOne;
+
+    // Run the query 
+    var result = await collection.findOne(query);
+
+    // If result is null then the user does not exist.
+    return result;
+  }
+  catch (e) {
+    console.log(e)
+    throw (e);
+  }
+
 
 }
 

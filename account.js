@@ -169,13 +169,13 @@ async function loadNextGamesWeather() {
    Save weather settings
 -------------------------------------*/
 async function saveSettings() {
-  const userId = getCookie("userId"); // get from cookie
+  const userId = getCookie("userId");
   if (!userId) return alert("Not logged in!");
 
   const forecastDays = document.getElementById("forecast-days").value;
 
   const weatherSettings = {
-    userID: userId, // use cookie value
+
     "7-day": forecastDays === "7" ? 1 : 0,
     "10-day": forecastDays === "10" ? 1 : 0,
     WindDirection: document.getElementById("show-wind-Direction").checked ? 1 : 0,
@@ -185,10 +185,10 @@ async function saveSettings() {
   };
 
   try {
-    const res = await fetch("/weather", {
+    const res = await fetch("http://localhost:8080/weather", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(weatherSettings)
+      body: JSON.stringify({ weatherSettings, userId })
     });
 
     if (!res.ok) throw new Error();
