@@ -138,23 +138,39 @@ async function getWeatherForEvent (address, date) {
   const response = await fetch(
     `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,windspeed_10m_max,winddirection_10m_dominant,weathercode&start_date=2025-12-14&end_date=2025-12-14&timezone=auto`
   )
+    const weatherData = await response.json()
 
-  const weatherData = await response.json()
-  weatherDiv.innerHTML = ``
+  var weatherTitle = document.createElement('h2');
+  weatherTitle.textContent = `Weather Forecast for ${address.city}, ${countOrState} on ${new Date(date).toLocaleDateString()}`;
+  weatherTitle.className = 'weather-title';
+
+//   var weatherTitleContainer = document.getElementById('title-containerId');
+//   console.log(weatherTitleContainer);
+//   weatherTitleContainer.appendChild(weatherTitle);
+
+
+  weatherDiv.innerHTML = ``;
   var closeButton = document.createElement('button')
   closeButton.textContent = 'Close'
   closeButton.className = 'closeButton'
   closeButton.addEventListener('click', closeWeatherWindow)
 
   weatherDiv.appendChild(closeButton)
-  const content = document.createElement('div')
-  content.innerHTML = `<h2>Weather Forecast for ${address.city}, ${countOrState} on ${new Date(date).toLocaleDateString()}</h2>
-        <p>Max Temperature: ${((weatherData.daily.temperature_2m_max[0] * (9 / 5) + 32).toFixed(1))} °F</p>
+
+  
+  const content = document.createElement('div');
+  content.className = 'weather-content';
+  content.innerHTML = `<p>Max Temperature: ${((weatherData.daily.temperature_2m_max[0] * (9 / 5) + 32).toFixed(1))} °F</p>
         <p>Min Temperature: ${( (weatherData.daily.temperature_2m_min[0] * (9 / 5) + 32 ).toFixed(1))} °F</p>
         <p>Max Wind Speed: ${(weatherData.daily.windspeed_10m_max[0] * 0.621371).toFixed(1)} mph</p>
         <p>Wind Direction: ${degreesToCompass(weatherData.current_weather.winddirection)}</p>
     `
   weatherDiv.appendChild(content)
+  var favoriteDiv = document.createElement('div');
+  favoriteDiv.className = 'fav-content'
+  favoriteDiv.innerHTML = `<h3>Favorite?</h3>`;
+  weatherDiv.appendChild(favoriteDiv);
+
 
   return weatherData
 }

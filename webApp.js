@@ -149,8 +149,6 @@ async function startServer() {
           res.writeHead(200, { 'Content-Type': contentType })
           res.end(content)
         })
-
-        
     }
   });
   // If on local port use 8080, if deployed use system port
