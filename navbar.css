@@ -1,0 +1,91 @@
+
+/* ==== COLOR THEME ==== */
+:root {
+  --sky: #4BB3FD;
+  --navy: #274C77;
+  --mint: #40C9A2;
+  --light: #E5F9E0;
+  --white: #F7F9FC;
+}
+
+/* ==== NAVBAR CONTAINER ==== */
+.navbar {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 15px 40px;
+  box-sizing: border-box;
+
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 2px solid rgba(64, 201, 162, 0.15);
+}
+
+/* ==== LOGO ==== */
+.navbar .logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+/* ==== NAV LINKS ==== */
+.links {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.links a {
+  color: var(--navy);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+/* Underline hover animation */
+.links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0%;
+  height: 2px;
+  background: var(--sky);
+  transition: width 0.3s ease;
+}
+
+.links a:hover::after {
+  width: 100%;
+}
+
+/* ==== SIGNUP BUTTON ==== */
+.signup-btn {
+  padding: 8px 16px;
+  background: var(--mint);
+  color: white !important;
+
+  border-radius: 8px;
+  font-weight: 700;
+
+  box-shadow: 0 3px 8px rgba(64, 201, 162, 0.3);
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.signup-btn:hover {
+  background: var(--sky);
+  transform: translateY(-1.5px);
+}
+
+/* ==== MOBILE FR*
