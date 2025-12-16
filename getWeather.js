@@ -1,13 +1,22 @@
+
+const temp = "C";
+const wind = true;        // Show wind speed
+const direction = true;   // Show wind direction
+
 function getWeather() {
   const city = document.getElementById('city').value.trim();
+  const country = document.getElementById('country').value;
 
   if (!city) {
     alert("Please enter a city.");
     return;
   }
+  if (!country) {
+    alert("Please select a country.");
+    return;
+  }
 
-  const geoLocation =
-    `https://geocoding-api.open-meteo.com/v1/search?name=${city}`;
+  const geoLocation = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=10&language=en&format=json&country=${country}`;
 
   fetch(geoLocation)
     .then(response => response.json())
@@ -17,8 +26,19 @@ function getWeather() {
         return;
       }
 
-      const latitude = geoLocationData.results[0].latitude;
-      const longitude = geoLocationData.results[0].longitude;
+      const results = geoLocationData.results;
+      const matches = results.filter(
+        place => place.name.toLowerCase() === city.toLowerCase() && place.country_code === country
+      );
+
+      if (matches.length === 0) {
+        document.getElementById('weather').innerText = "Location not found.";
+        return;
+      }
+
+      const chosen = matches[0];
+      const latitude = chosen.latitude;
+      const longitude = chosen.longitude;
 
       const forecastUrl =
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
@@ -26,7 +46,7 @@ function getWeather() {
         `&daily=temperature_2m_max,temperature_2m_min,` +
         `apparent_temperature_max,apparent_temperature_min,` +
         `windspeed_10m_max,winddirection_10m_dominant,weathercode` +
-        `&timezone=auto`;
+        `&forecast_days=14&timezone=auto`;
 
       return fetch(forecastUrl);
     })
@@ -37,13 +57,23 @@ function getWeather() {
         return;
       }
 
-      /* ---------- CURRENT WEATHER ---------- */
-      const currentTempF = (weatherData.current_weather.temperature * 9 / 5 + 32).toFixed(1);
 
+      function formatTemp(value) {
+        return temp === "C" ? value.toFixed(1) : (value * 9 / 5 + 32).toFixed(1);
+      }
+
+      let temperatureUnit;
+
+      if (temp === "C") {
+        temperatureUnit = "°C";
+      } else {
+        temperatureUnit = "°F";
+      }
+
+      // Current weather
+      const currentTemp = formatTemp(weatherData.current_weather.temperature);
       const currentWindMph = (weatherData.current_weather.windspeed * 0.621371).toFixed(1);
-
       const currentDirection = degreesToCompass(weatherData.current_weather.winddirection);
-
       const currentWeatherIcon = getWeatherIcon(weatherData.current_weather.weathercode);
 
       const days = weatherData.daily.time;
@@ -55,32 +85,31 @@ function getWeather() {
       const windSpeeds = weatherData.daily.windspeed_10m_max;
       const windDirections = weatherData.daily.winddirection_10m_dominant;
 
-
       let html = `
         <div class="current">
           <h3>Current Weather in ${city}</h3>
           <div class="current-day">
             <strong>Now</strong>
-          <div class="icon">
-          <img src="${currentWeatherIcon}" alt="Current Weather Icon">
-        </div>
-          High: ${currentTempF} °F<br>
-          Wind: ${currentWindMph} mph from ${currentDirection}
-          </div>
+            <div class="icon">
+              <img src="${currentWeatherIcon}" alt="Current Weather Icon">
+            </div>
+            High: ${currentTemp} ${temperatureUnit}<br>
+            ${wind ? `Wind: ${currentWindMph} mph <br>
+            ${direction ? " from " + currentDirection : ""}` : ""}
+            </div>
         </div>
 
         <h3 class="forecast-title">7-Day Forecast</h3>
         <div class="forecast-grid">
-        `;
+      `;
 
       for (let i = 0; i < 7; i++) {
-        const maxF = (maxTemps[i] * 9 / 5 + 32).toFixed(1);
-        const minF = (minTemps[i] * 9 / 5 + 32).toFixed(1);
-        const feelsMaxF = (feelsLikeMax[i] * 9 / 5 + 32).toFixed(1);
-        const feelsMinF = (feelsLikeMin[i] * 9 / 5 + 32).toFixed(1);
+        const maxT = formatTemp(maxTemps[i]);
+        const minT = formatTemp(minTemps[i]);
+        const feelsMax = formatTemp(feelsLikeMax[i]);
+        const feelsMin = formatTemp(feelsLikeMin[i]);
         const windMph = (windSpeeds[i] * 0.621371).toFixed(1);
-        const windDirection = degreesToCompass(windDirections[i]);
-
+        const windDir = degreesToCompass(windDirections[i]);
         const icon = getWeatherIcon(weatherCodes[i]);
 
         html += `
@@ -89,21 +118,23 @@ function getWeather() {
             <div class="icon">
               <img src="${icon}" alt="Weather icon">
             </div>
-            High: ${maxF} °F (Feels like ${feelsMaxF} °F)<br>
-            Low: ${minF} °F (Feels like ${feelsMinF} °F)<br>
-            Wind: ${windMph} mph from ${windDirection}
+            High: ${maxT} ${temperatureUnit} (Feels like ${feelsMax} ${temperatureUnit})<br>
+            Low: ${minT} ${temperatureUnit} (Feels like ${feelsMin} ${temperatureUnit})<br>
+            ${wind ? `Wind: ${windMph} mph <br>
+            ${direction ? " from " + windDir : ""}` : ""}
           </div>
         `;
       }
-      html += `</div>`; // closes .forecast-grid
+
+      html += `</div>`;
       document.getElementById('weather').innerHTML = html;
     })
     .catch(error => {
       console.error(error);
-      document.getElementById('weather').innerText =
-        "Failed to retrieve weather data.";
+      document.getElementById('weather').innerText = "Failed to retrieve weather data.";
     });
 }
+
 
 //https://open-meteo.com/en/docs?hourly=temperature_2m,weather_code&daily=weather_code&timezone=America%2FNew_York#data_sources
 /* Code	Description
@@ -140,6 +171,29 @@ export function degreesToCompass(deg) {
   if (deg < 225) return "South";
   return "West";
 }
+
+
+window.onload = function () {
+  const city = getCookie("city");
+  if (!city) {
+    window.location.href = "login.html";
+  } else {
+    document.getElementById('city').value = city;
+  }
+};
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+
+
+
+
+
+
 
 
 

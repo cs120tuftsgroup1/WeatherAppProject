@@ -1,0 +1,100 @@
+/* ==== COLOR THEME ==== */
+:root {
+  --sky: #4BB3FD;
+  --navy: #274C77;
+  --mint: #40C9A2;
+  --light: #E5F9E0;
+  --white: #F7F9FC;
+}
+
+/* ==== PAGE BACKGROUND ==== */
+body {
+  background: linear-gradient(
+      135deg,
+      rgba(75, 179, 253, 0.25),
+      rgba(64, 201, 162, 0.25)
+    ),
+    var(--white);
+
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+
+  /* ❤️ Center the card */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  /* Make body full screen */
+  min-height: 100vh;
+}
+
+
+/* ==== AUTH CONTAINER (CARD) ==== */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 420px;
+  margin: 80px auto;
+  padding: 30px;
+  background: var(--white);
+  border-radius: 14px;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--light);
+  animation: fadeIn 0.8s ease;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+/* ==== INPUT FIELDS ==== */
+.auth-form input {
+  width: 95%;
+  padding: 14px;
+  margin-bottom: 18px;
+
+  border-radius: 10px;
+  border: 1.5px solid #cdd7e3;
+
+  background: #ffffff;
+  font-size: 15px;
+  transition: all 0.2s ease;
+}
+
+/* input focus styles */
+.auth-form input:focus {
+  border-color: var(--sky);
+  box-shadow: 0 0 8px rgba(75, 179, 253, 0.4);
+  outline: none;
+}
+
+/* ==== BUTTON STYLE ==== */
+.auth-btn {
+  width: 95%;
+  padding: 14px;
+  margin-top: 5px;
+
+  background: var(--sky);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+
+  border: none;
+  border-radius: 10px;
+
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+/* hover effect */
+.auth-btn:hover {
+  background: var(--navy);
+  transform: translateY(-1px);
+}
