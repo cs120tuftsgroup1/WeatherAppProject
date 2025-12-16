@@ -1,25 +1,129 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>TruSky • Home</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style.css">
-</head>
+/* ==== COLORS ==== */
+:root {
+  --sky: #4BB3FD;
+  --navy: #274C77;
+  --mint: #40C9A2;
+  --light: #E5F9E0;
+  --white: #F7F9FC;
+}
 
-<body>
+/* ==== GLOBAL ==== */
+body {
+  margin: 0;
+  font-family: "Inter", sans-serif;
 
-    <!-- ===== HERO SECTION ===== -->
-    <div class="hero">
-        <h1 class="hero-title">Welcome to TruSky</h1>
-        <p class="hero-sub">
-            Your personalized weather dashboard — accurate, fast, and beautifully simple.
-        </p>
+  background: linear-gradient(
+      135deg,
+      rgba(75, 179, 253, 0.25),
+      rgba(64, 201, 162, 0.25)
+    ),
+    var(--white);
+}
 
-        <a href="weather.html" class="hero-btn">Check Your Weather</a>
-    </div>
+/* ==== NAVBAR ==== */
+.navbar {
+  width: 100%;
+  padding: 18px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--white);
+  border-bottom: 2px solid var(--light);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
 
-    <script type="module" src="layers.js"></script>
-</body>
-</html>
+.logo {
+  font-size: 22px;
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  margin: 0;
+}
+
+.navbar a {
+  text-decoration: none;
+  color: var(--navy);
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.navbar a:hover,
+.navbar a.active {
+  color: var(--sky);
+}
+
+/* ==== HERO SECTION ==== */
+.hero {
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero h1 {
+  font-size: 48px;
+  color: var(--navy);
+  margin-bottom: 15px;
+}
+
+.hero p {
+  font-size: 18px;
+  max-width: 650px;
+  margin: 0 auto 35px auto;
+  color: #555;
+}
+
+.cta-btn {
+  display: inline-block;
+  padding: 14px 32px;
+  background: var(--sky);
+  color: white;
+  font-size: 18px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.cta-btn:hover {
+  background: #3aa8f7;
+}
+
+/* ==== FEATURES SECTION ==== */
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  padding: 60px 20px 100px;
+  flex-wrap: wrap;
+}
+
+.feature-card {
+  width: 280px;
+  background: var(--white);
+  padding: 25px;
+  border-radius: 14px;
+  border: 2px solid var(--light);
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  transition: 0.25s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+.feature-card h3 {
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  color: #444;
+}
