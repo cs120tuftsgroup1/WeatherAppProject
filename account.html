@@ -1,66 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Account</title>
-  <link rel="stylesheet" href="account.css">
+  <link rel="stylesheet" href="./auth.css">
+  <link rel="stylesheet" href="./account.css">
 </head>
 
 <body>
-    <nav class="navbar">
-        <h2 class="nav-logo">TruSky</h2>
+  <div class="account-container">
+    
+    <h1>Your Account</h1>
 
-        <ul class="nav-links">
-            <li><a href="home.html" class="active">Home</a></li>
-            <li><a href="weather.html">Weather API</a></li>
-            <li><a href="sportsEvent.html">Sports Events</a></li>
-            <li><a href="account.html">Account</a></li>
-        </ul>
-    </nav>
-    <div class="account-wrapper">
+    <!-- Profile -->
+    <section class="profile-section">
+      <h2>Profile</h2>
+      <p><strong>Username:</strong> <span id="username">Loading...</span></p>
+    </section>
 
-    <div class="account-card">
-      <h1>Your Account</h1>
+    <!-- Favorite Teams -->
+    <section class="favorites-section">
+      <h2>Favorite Teams</h2>
+      <ul id="favorite-teams"></ul>
 
-      <div class="profile-section">
-        <p><strong>Username:</strong> <span id="username">Loading...</span></p>
-      </div>
+      <input id="team-input" placeholder="Add a team..." />
+      <button id="add-team-btn" class="btn">Add Team</button>
+    </section>
 
-      <hr class="divider" />
+    <!-- Local Weather -->
+    <section class="weather-section">
+      <h2>Your Local Weather</h2>
+      <div id="weather-box">Loading weather...</div>
+    </section>
 
-      <h2>Settings</h2>
+    <!-- Next Games Weather -->
+    <section>
+      <h2>Next Game Forecasts</h2>
+      <div id="next-games-container">Loading...</div>
+    </section>
 
-      <div class="setting-group">
-        <label>Default City</label>
-        <input id="default-city" type="text" placeholder="Enter a city">
-      </div>
+    <button id="logout-btn" class="logout-btn">Log Out</button>
 
-      <div class="setting-row">
-        <div class="setting-group">
-          <label>Temperature Unit</label>
-          <select id="temp-unit">
-            <option value="F">Fahrenheit (°F)</option>
-            <option value="C">Celsius (°C)</option>
-          </select>
-        </div>
-
-        <div class="setting-group">
-          <label>Theme</label>
-          <select id="theme-select">
-            <option value="light">Light Mode</option>
-            <option value="dark">Dark Mode</option>
-          </select>
-        </div>
-      </div>
-
-      <button id="save-btn" class="btn-primary">Save Changes</button>
-
-      <button id="logout-btn" class="btn-outline">Log Out</button>
-    </div>
   </div>
 
-  <script type="module" src="account.js"></script>
+  <script type="module" src="./account.js"></script>
 </body>
-
 </html>

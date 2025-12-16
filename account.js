@@ -1,60 +1,174 @@
-import { getUserById, updateUserSettings } from "./database.js";
+import { getTodayWeather, getWeatherForCoords } from "./weatherHelper.js";
+import { getNextGame } from "./sportsHelper.js";
 
-window.onload = async function () {
-  const userId = getCookie("userId");
-
-  if (!userId) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  // Load user info
-  const user = await getUserById(userId);
-
-  if (!user) {
-    alert("User not found.");
-    document.cookie = "userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-    window.location.href = "login.html";
-    return;
-  }
-
-  // Display user data
-  document.getElementById("username").innerText = user.name;
-  // Load user settings
-  document.getElementById("defaultCity").value = user.settings?.defaultCity || "";
-  document.getElementById("tempUnit").value = user.settings?.tempUnit || "F";
-  document.getElementById("theme").value = user.settings?.theme || "light";
-};
-
-function getCookie(name) {
-  const cookies = document.cookie.split(";").map(c => c.trim());
-  for (const cookie of cookies) {
-    if (cookie.startsWith(name + "=")) {
-      return cookie.split("=")[1];
-    }
-  }
-  return null;
+/* ----------------------------------
+   LOAD USER PROFILE
+-------------------------------------*/
+function loadProfile() {
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+  document.getElementById("username").textContent = user.username || "Not set";
+  document.getElementById("email").textContent = user.email || "Not set";
 }
 
-window.saveSettings = async function () {
-  const userId = getCookie("userId");
+/* ----------------------------------
+   FAVORITE TEAMS EDITOR
+-------------------------------------*/
+function loadFavoriteTeams() {
+  const favList = document.getElementById("favorite-teams");
+  favList.innerHTML = "";
 
-  const updatedSettings = {
-    defaultCity: document.getElementById("defaultCity").value,
-    tempUnit: document.getElementById("tempUnit").value,
-    theme: document.getElementById("theme").value
-  };
+  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
 
-  const success = await updateUserSettings(userId, updatedSettings);
-
-  if (success) {
-    alert("Settings saved!");
-  } else {
-    alert("Failed to save settings.");
+  if (!teams.length) {
+    favList.innerHTML = "<li>No favorite teams saved.</li>";
+    return;
   }
-};
 
-window.logout = function () {
-  document.cookie = "userId=; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+  teams.forEach((team, index) => {
+    const li = document.createElement("li");
+    li.textContent = team;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "×";
+    removeBtn.className = "remove-team-btn";
+    removeBtn.onclick = () => removeTeam(index);
+
+    li.appendChild(removeBtn);
+    favList.appendChild(li);
+  });
+}
+
+function addTeam() {
+  const input = document.getElementById("team-input");
+  const newTeam = input.value.trim();
+
+  if (!newTeam) return;
+
+  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
+  teams.push(newTeam);
+
+  localStorage.setItem("favoriteTeams", JSON.stringify(teams));
+
+  input.value = "";
+  loadFavoriteTeams();
+  loadNextGamesWeather();
+}
+
+function removeTeam(index) {
+  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
+  teams.splice(index, 1);
+  localStorage.setItem("favoriteTeams", JSON.stringify(teams));
+
+  loadFavoriteTeams();
+  loadNextGamesWeather();
+}
+
+document.getElementById("add-team-btn").addEventListener("click", addTeam);
+
+/* ----------------------------------
+   AUTO-DETECT LOCATION WEATHER
+-------------------------------------*/
+function loadLocalWeather() {
+  const box = document.getElementById("weather-box");
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+
+      const weather = await getWeatherForCoords(lat, lon);
+      updateWeatherBox(weather);
+    }, async () => {
+      // fallback default city
+      const weather = await getTodayWeather("Boston");
+      updateWeatherBox(weather);
+    });
+  } else {
+    getTodayWeather("Boston").then(updateWeatherBox);
+  }
+}
+
+function updateWeatherBox(weather) {
+  const box = document.getElementById("weather-box");
+
+  if (weather.error) {
+    box.textContent = weather.error;
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="weather-widget">
+      <img src="${weather.icon}" class="weather-icon">
+      <div class="weather-info">
+        <p><strong>${weather.city}</strong></p>
+        <p>${weather.temperature}°F — ${weather.description}</p>
+        <small>Wind: ${weather.wind} mph</small>
+      </div>
+    </div>
+  `;
+}
+
+/* ----------------------------------
+   NEXT GAME FORECAST SECTION
+-------------------------------------*/
+async function loadNextGamesWeather() {
+  const container = document.getElementById("next-games-container");
+  container.innerHTML = "Loading...";
+
+  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
+
+  if (!teams.length) {
+    container.innerHTML = "<p>No favorite teams saved.</p>";
+    return;
+  }
+
+  container.innerHTML = ""; // clear
+
+  for (let team of teams) {
+    const game = await getNextGame(team);
+
+    if (!game) {
+      container.innerHTML += `<p>No upcoming game found for ${team}.</p>`;
+      continue;
+    }
+
+    const weather = await getWeatherForCoords(
+      game.latitude,
+      game.longitude
+    );
+
+    container.innerHTML += `
+      <div class="game-card">
+        <h3>${team} — Next Game</h3>
+        <p><strong>${game.opponent}</strong></p>
+        <p>${game.location}</p>
+        <p>${new Date(game.date).toLocaleString()}</p>
+        <div class="weather-widget">
+          <img src="${weather.icon}" class="weather-icon">
+          <div>
+            ${weather.temperature}°F — ${weather.description}<br>
+            Wind: ${weather.wind} mph
+          </div>
+        </div>
+      </div>
+    `;
+  }
+}
+
+/* ----------------------------------
+   LOGOUT
+-------------------------------------*/
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.removeItem("user");
   window.location.href = "login.html";
-};
+});
+
+/* ----------------------------------
+   INITIAL PAGE LOAD
+-------------------------------------*/
+window.addEventListener("DOMContentLoaded", () => {
+  loadProfile();
+  loadFavoriteTeams();
+  loadLocalWeather();
+  loadNextGamesWeather();
+});
