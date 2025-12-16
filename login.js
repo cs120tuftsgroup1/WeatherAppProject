@@ -19,11 +19,4 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
     alert('Invalid email or password.')
   }
 
-
-  // if (data.success) {
-  //   localStorage.setItem("token", data.token);
-  //   window.location.href = "home.html";
-  // } else {
-  //   alert(data.message || "Login failed");
-  // }
 })

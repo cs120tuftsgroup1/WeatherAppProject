@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,27 +25,56 @@
       font-size: 22px;
     }
 
-    header.site-header, footer.footer-container {
+    header.site-header,
+    footer.footer-container {
       background-color: #4fa3e0;
       color: white;
       padding: 15px;
     }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    select,
+    input,
+    button {
+      font-size: 18px;
+      padding: 8px;
+      margin: 5px;
+    }
   </style>
 </head>
+
 <body>
 
   <div id="header"></div>
 
   <h1>Weather by City</h1>
-  <input type="text" id="city" placeholder="Enter city">
-  <button onclick="getWeather()">Get Weather</button>
+
+  <div class="controls">
+    <input type="text" id="city" placeholder="Enter city">
+
+    <select id="country">
+      <option value="">Select country</option>
+      <option value="US">United States</option>
+      <option value="CA">Canada</option>
+      <option value="GB">United Kingdom</option>
+      <option value="AU">Australia</option>
+      <option value="DE">Germany</option>
+      <option value="FR">France</option>
+      <option value="JP">Japan</option>
+    </select>
+
+    <button id="get-weather-button">Get Weather</button>
+  </div>
 
   <div id="weather"></div>
 
-  
   <div id="footer"></div>
 
-  <script src="getWeather.js" defer></script>
-  <script src="layers.js" defer></script>
+  <script type="module" src="getWeather.js" defer></script>
+  <script src="layers.js" ></script>
 </body>
+
 </html>
