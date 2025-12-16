@@ -3,7 +3,14 @@ const temp = "C";
 const wind = true;        // Show wind speed
 const direction = true;   // Show wind direction
 
-function getWeather() {
+const weatherBtn = document.querySelector("#get-weather-button");
+
+if (weatherBtn) {
+    weatherBtn.addEventListener("click", getWeather);
+}
+
+ function getWeather () {
+
   const city = document.getElementById('city').value.trim();
   const country = document.getElementById('country').value;
 
@@ -133,7 +140,7 @@ function getWeather() {
       console.error(error);
       document.getElementById('weather').innerText = "Failed to retrieve weather data.";
     });
-}
+  }
 
 
 //https://open-meteo.com/en/docs?hourly=temperature_2m,weather_code&daily=weather_code&timezone=America%2FNew_York#data_sources
@@ -174,12 +181,10 @@ export function degreesToCompass(deg) {
 
 
 window.onload = function () {
-  const city = getCookie("city");
-  if (!city) {
+  const name = getCookie("userId");
+  if (!name) {
     window.location.href = "login.html";
-  } else {
-    document.getElementById('city').value = city;
-  }
+  } 
 };
 
 function getCookie(name) {

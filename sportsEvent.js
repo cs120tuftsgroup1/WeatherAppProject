@@ -144,10 +144,9 @@ async function getWeatherForEvent (address, date) {
   weatherTitle.textContent = `Weather Forecast for ${address.city}, ${countOrState} on ${new Date(date).toLocaleDateString()}`;
   weatherTitle.className = 'weather-title';
 
-  var weatherTitleContainer = document.getElementById('title-containerId');
-  console.log(weatherTitleContainer);
-  weatherTitleContainer.innerHTML = ``;
-  weatherTitleContainer.appendChild(weatherTitle);
+//   var weatherTitleContainer = document.getElementById('title-containerId');
+//   console.log(weatherTitleContainer);
+//   weatherTitleContainer.appendChild(weatherTitle);
 
 
   weatherDiv.innerHTML = ``;
