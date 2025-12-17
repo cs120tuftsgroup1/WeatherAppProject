@@ -1,16 +1,54 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>Your Account</title>
   <link rel="stylesheet" href="./auth.css">
   <link rel="stylesheet" href="./account.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #99c6ed;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333;
+      font-size: 50px;
+    }
+
+    #weather {
+      margin-top: 20px;
+      font-size: 22px;
+    }
+
+    header.site-header,
+    footer.footer-container {
+      background-color: #4fa3e0;
+      color: white;
+      padding: 15px;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    select,
+    input,
+    button {
+      font-size: 18px;
+      padding: 8px;
+      margin: 5px;
+    }
+  </style>
 </head>
 
 <body>
- 
+
   <div class="account-container">
-    
+
     <h1>Your Account</h1>
 
     <!-- Profile -->
@@ -41,10 +79,52 @@
       <div id="next-games-container">Loading...</div>
     </section>
 
+    <!-- Weather Settings -->
+    <section class="settings-section">
+      <h2>Weather Settings</h2>
+
+      <label>
+        <input type="checkbox" id="show-icon" />
+        Show Weather Icons
+      </label> <br>
+
+      <label>
+        <input type="checkbox" id="show-wind-Direction" />
+        Show Wind Direction
+      </label> <br>
+
+      <label>
+        <input type="checkbox" id="show-wind-Speed" />
+        Show Wind Speed
+      </label> <br>
+
+      <label>
+        Forecast length:
+        <select id="forecast-days">
+          <option value="7">7-Day Forecast</option>
+          <option value="10">10-Day Forecast</option>
+        </select>
+      </label> <br>
+
+      <label>
+        Temperature Unit:
+        <select id="temperature-unit">
+          <option value="celcius">Celcius</option>
+          <option value="Fahrenheit">Fahrenheit</option>
+        </select>
+      </label>
+      <br>
+
+      <button id="save-settings-btn" class="btn">Save Settings</button>
+    </section>
+
     <button id="logout-btn" class="logout-btn">Log Out</button>
 
   </div>
 
   <script type="module" src="./account.js"></script>
+  <script src="layers.js"></script>
+
 </body>
+
 </html>
