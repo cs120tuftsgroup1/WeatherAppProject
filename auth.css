@@ -8,12 +8,6 @@
 }
 
 body {
-  background: linear-gradient(
-      135deg,
-      rgba(75, 179, 253, 0.25),
-      rgba(64, 201, 162, 0.25)
-    ),
-    var(--white);
 
   font-family: "Helvetica", "Inter", sans-serif;
   margin: 0;
@@ -23,7 +17,6 @@ body {
   justify-content: center;
   align-items: center;
 
-  min-height: 100vh;
 }
 
 

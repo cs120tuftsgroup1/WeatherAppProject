@@ -36,7 +36,7 @@ var abrvByLeague = new Map([
 ])
 // Populate sports and leagues dropdowns on page load
 window.addEventListener('DOMContentLoaded', () => {
-  console.log('Populating sports league dropdown')
+
   var leagueSelect = document.getElementById('league-select')
 
   var sportsSelect = document.getElementById('sports-select')
@@ -104,14 +104,13 @@ async function getWeatherForEvent (address, date, teamData, league) {
   var countOrState
   if (address.state) {
     var stateName = usStateAbrv[address.state]
-    console.log(stateName)
+
     locationResponse = await fetch(
       `https://geocoding-api.open-meteo.com/v1/search?name=${address.city}&countryCode=US`
     )
 
     locationData = await locationResponse.json()
     for (var i = 0; i < locationData.results.length; i++) {
-      console.log(locationData.results[i].admin1)
       if (locationData.results[i].admin1 === stateName) {
         longitude = locationData.results[i].longitude
         latitude = locationData.results[i].latitude
@@ -144,7 +143,6 @@ async function getWeatherForEvent (address, date, teamData, league) {
   }, ${countOrState} on ${new Date(date).toLocaleDateString()}`
   weatherTitle.className = 'weather-title'
 
-  console.log(weatherTitleContainer)
   weatherTitleContainer.appendChild(weatherTitle)
   weatherDiv.appendChild(weatherTitleContainer)
 
@@ -153,10 +151,10 @@ async function getWeatherForEvent (address, date, teamData, league) {
 
   var closeButton = document.createElement('button')
   closeButton.textContent = 'Close'
-  closeButton.className = 'closeButton'
+  closeButton.className = 'filter-button'
   closeButton.addEventListener('click', closeWeatherWindow)
 
-  weatherDiv.appendChild(closeButton)
+  
 
   const content = document.createElement('div')
   content.className = 'weather-content'
@@ -222,15 +220,19 @@ async function getWeatherForEvent (address, date, teamData, league) {
   // Double check we have a fav Array to split
   if(Array.isArray(teamArray) && teamArray.length > 0) 
   {
-    console.log(teamArray);
+
     //Check if user already selected the team as a fav. If so disable button
     if (teamArray.find(team => team.teamId == teamData.homeTeamId)) {
-        homeTeamButton.disabled = true
-        homeTeamButton.style.background = '#808080'
+        homeTeamButton.disabled = true;
+        homeTeamButton.style.background = '#808080';
+        homeTeamButton.textContent = 'Favorited';
+        homeTeamButton.style.cursor = 'default';
     }
     if (teamArray.includes(teamArray.find(team => team.teamId == teamData.awayTeamId))) {
         awayTeamButton.disabled = true
         awayTeamButton.style.background = '#808080'
+        awayTeamButton.textContent = 'Favorited';
+        awayTeamButton.style.cursor = 'default';
     }
   }
   homeTeamButton.addEventListener('click', () => {
@@ -245,7 +247,7 @@ async function getWeatherForEvent (address, date, teamData, league) {
 
   weatherDataDiv.appendChild(favoriteDiv)
   weatherDiv.appendChild(weatherDataDiv)
-
+  weatherDiv.appendChild(closeButton)
   return weatherData
 }
 
@@ -255,26 +257,29 @@ async function addTeamFavorite (teamId,league, teamButton) {
 
   let favArray = await getFavoriteTeams() || [];
  
-  console.log("FAV ARRAY", favArray);
+
   if (Array.isArray(favArray) && favArray.length > 0) {
     var newTeam = {teamId: teamId, league: league}
     favArray.push(newTeam);
-    console.log("After new team added ",favArray);
-    console.log('updating favs');
+
 
     if (updateFavoriteTeams(favArray, userId)) {
       teamButton.disabled = true
       teamButton.style.background = '#808080'
+      teamButton.textContent = 'Favorited';
+      teamButton.style.cursor = 'default';
       alert("The team has been added as a favorite");
     } else {
       throw new Error('Failed to update Favorites')
     }
   } else {
-      console.log('inserting favs');
+     
     // the user has no favorites saved.
     if (insertNewFavTeam({teamId: teamId, league: league}, userId)) {
       teamButton.disabled = true
       teamButton.style.background = '#808080'
+      teamButton.textContent = 'Favorited';
+      teamButton.style.cursor = 'default';
       alert("The team has been added as a favorite");
     }
   }
@@ -294,10 +299,9 @@ async function getFavoriteTeams () {
       favArray.push(parsed); // single object, just push it
     }
   } else {
-    console.log('getting favorite teams')
-    var result = await getFavoriteTeamsFromDb(userId)
-    console.log(result)
    
+    var result = await getFavoriteTeamsFromDb(userId)
+
       if (result?.userFavs?.length) {
       favArray = result.userFavs.map(team => JSON.parse(team))
     }
@@ -367,15 +371,32 @@ document.getElementById('getFavorites-btn').addEventListener('click', async func
     {
       
       userFavs = JSON.parse(userFavs);
+
+      if(!Array.isArray(userFavs))
+      {
+        var userFavArray = [];
+        userFavArray.push(userFavs);
+        userFavs = userFavArray
+      }
+
       var todaysDate = new Date()
       todaysDate = formatDate(todaysDate, 0)
       var dateInAWeek = new Date()
       dateInAWeek = formatDate(dateInAWeek, 7)
-      console.log("userFavs converted ",userFavs )
+ 
    for (const team of userFavs) {
-        const sportFound = Array.from(leaguesBySport.entries())
+        
+        var sportFound = Array.from(leaguesBySport.entries())
         .find(([sport, leagues]) => leagues.includes(team.league.toUpperCase()))?.[0];
-
+            if(sportFound == null)
+            {
+               var abrvName = Array.from(abrvByLeague.entries())
+              .find(([name, abrv]) => abrv.includes(team.league))?.[0];
+  
+              sportFound = Array.from(leaguesBySport.entries())
+              .find(([sport, leagues]) => leagues.includes(abrvName))?.[0];  
+            }
+  
           const response = await fetch(
           `https://site.api.espn.com/apis/site/v2/sports/${sportFound.toLowerCase()}/${team.league}/teams/${team.teamId}?dates=${todaysDate}-${dateInAWeek}`);
 
@@ -384,7 +405,7 @@ document.getElementById('getFavorites-btn').addEventListener('click', async func
          var sportObject = formatTeamObject(data, team.league);
          sportsData.push(sportObject);
       }
-      console.log(sportsData);
+
       displaySportData(sportsData);
     }
 });
@@ -406,22 +427,19 @@ document
     // Map league to its abbreviation if available
     league = abrvByLeague.get(league) ? abrvByLeague.get(league) : league
 
-    console.log('Fetching events for sport:', sport, 'league:', league)
-    console.log('Lowercase sport:', sportLower)
 
     // Clear previous results
     
     // Fetch sports event data
     var eventData = await getSportsEventData(sportLower, league)
-    console.log('Event data length:', eventData.length)
-    console.log('Data received:', eventData)
+
     displaySportData(eventData);
     
   })
 
   function displaySportData(eventData)
   {
-    console.log(eventData);
+
     var eventsContainer = document.getElementById('events-container')
     eventsContainer.innerHTML = '' // Clear previous results
 
@@ -447,9 +465,9 @@ document
                     <h3>${event.homeTeam}</h3>
                 </div>
             </div>
-            <p>Location: ${event.location}</p>
-            <p>Date: ${new Date(event.date).toLocaleDateString()}</p>
-            <p>Time: ${new Date(event.date).toLocaleTimeString()}</p>
+            <p><b>Location:</b> ${event.location}</p>
+            <p><b>Date:</b> ${new Date(event.date).toLocaleDateString()}</p>
+            <p><b>Time:</b> ${new Date(event.date).toLocaleTimeString()}</p>
         `
       const weatherBtn = document.createElement('button')
       weatherBtn.textContent = 'Check Weather'
@@ -492,8 +510,7 @@ async function getSportsEventData (sport, league) {
   const response = await fetch(
     `https://site.api.espn.com/apis/site/v2/sports/${sport}/${league}/scoreboard?dates=${todaysDate}-${dateInAWeek}`
   )
-  const data = await response.json()
-  console.log('Raw data from API:', data.events.length)
+  const data = await response.json()  
   sportsData = formatSportsObject(data,league);
   return sportsData;
 }
@@ -560,7 +577,7 @@ function formatTeamObject(eventJson, league)
     event.date = nextEvent.date;
     event.address = nextEvent.competitions[0].venue.address;
     event.league = league;
-    console.log(event);
+
 
     return event;
 }
