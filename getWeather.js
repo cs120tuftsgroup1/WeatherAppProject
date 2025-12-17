@@ -1,15 +1,33 @@
-
-const temp = "C";
-const wind = true;        // Show wind speed
-const direction = true;   // Show wind direction
-const showIcons = true;
 const weatherBtn = document.querySelector("#get-weather-button");
 
-if (weatherBtn) {
-    weatherBtn.addEventListener("click", getWeather);
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}
+function getSettings() {
+  return {
+    temp: getCookie("Celcius") === "1" ? "C" : "F",
+    wind: getCookie("WindSpeed") === "1",
+    direction: getCookie("WindDirection") === "1",
+    showIcons: getCookie("Icons") === "1",
+    forecastDays: getCookie("7-day") === "1" ? 7 : (getCookie("10-day") === "1" ? 10 : 7),
+  };
 }
 
- function getWeather () {
+
+if (weatherBtn) {
+  weatherBtn.addEventListener("click", getWeather);
+}
+
+function getWeather() {
+  const { temp, wind, direction, showIcons, forecastDays } = getSettings();
+
+
+  console.log(temp)
+  console.log(wind)
+  console.log(direction)
 
   const city = document.getElementById('city').value.trim();
   const country = document.getElementById('country').value;
@@ -107,7 +125,7 @@ if (weatherBtn) {
                 <div class="forecast-grid">
             `;
 
-      for (let i = 0; i < 7; i++) {
+      for (let i = 0; i < forecastDays; i++) {
         const maxT = formatTemp(maxTemps[i]);
         const minT = formatTemp(minTemps[i]);
         const feelsMax = formatTemp(feelsLikeMax[i]);
@@ -117,15 +135,15 @@ if (weatherBtn) {
         const icon = getWeatherIcon(weatherCodes[i]);
 
         html += `
-                    <div class="day">
-                        <strong>${days[i]}</strong>
-                        ${showIcons ? `<div class="icon"><img src="${icon}" alt="Weather icon"></div>` : ""}
-                        High: ${maxT} ${temperatureUnit} (Feels like ${feelsMax} ${temperatureUnit})<br>
-                        Low: ${minT} ${temperatureUnit} (Feels like ${feelsMin} ${temperatureUnit})<br>
-                        ${wind ? `Wind: ${windMph} mph ${direction ? " from " + windDir : ""}` : ""}
-                    </div>
-                `;
-            }
+        <div class="day">
+            <strong>${days[i]}</strong>
+            ${showIcons ? `<div class="icon"><img src="${icon}" alt="Weather icon"></div>` : ""}
+            High: ${maxT} ${temperatureUnit} (Feels like ${feelsMax} ${temperatureUnit})<br>
+            Low: ${minT} ${temperatureUnit} (Feels like ${feelsMin} ${temperatureUnit})<br>
+            ${wind ? `Wind: ${windMph} mph ${direction ? " from " + windDir : ""}` : ""}
+        </div>
+    `;
+      }
 
       html += `</div>`;
       document.getElementById('weather').innerHTML = html;
@@ -134,7 +152,7 @@ if (weatherBtn) {
       console.error(error);
       document.getElementById('weather').innerText = "Failed to retrieve weather data.";
     });
-  }
+}
 
 
 //https://open-meteo.com/en/docs?hourly=temperature_2m,weather_code&daily=weather_code&timezone=America%2FNew_York#data_sources
@@ -178,14 +196,9 @@ window.onload = function () {
   const name = getCookie("userId");
   if (!name) {
     window.location.href = "logIn.html";
-  } 
+  }
 };
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-}
 
 
 

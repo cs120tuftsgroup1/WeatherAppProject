@@ -4,7 +4,7 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
   const email = e.target.email.value
   const password = e.target.password.value
 
-  const res = await fetch('https://truesky-993c654d7f65.herokuapp.com/logMeIn', {
+  const res = await fetch('http://localhost:8080/logMeIn', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

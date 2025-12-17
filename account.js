@@ -196,35 +196,36 @@ async function saveSettings() {
 
   }
 }
-
-
 /* ----------------------------------
    Load weather settings
 -------------------------------------*/
-async function getFavoriloadSettingseTeams() {
+async function loadSettings() {
   var userId = getCookie('userId')
-  var favs = getCookie('weatherSetting')
-  var favArray = []
+  var favs = getCookie('weatherSettings')
+  var weatherSettingsArray = []
   // user doesnt have a favorite list
   if (favs != null && favs != '') {
     const parsed = JSON.parse(favs);
     // ensure it is an array
     if (Array.isArray(parsed)) {
-      favArray.push(...parsed); // safe to spread
+      weatherSettingsArray.push(...parsed); // safe to spread
     } else if (parsed) {
-      favArray.push(parsed); // single object, just push it
+      weatherSettingsArray.push(parsed); // single object, just push it
     }
   } else {
 
     var result = await getWeatherSettingsFromDb(userId)
 
-    if (result?.userFavs?.length) {
-      favArray = result.userFavs.map(team => JSON.parse(team))
+    if (result?.weatherSettings?.length) {
+      weatherSettingsArray = result.weatherSettings.map(team => JSON.parse(team))
     }
 
   }
-  return favArray
+  return weatherSettingsArray
 }
+
+
+
 async function getWeatherSettingsFromDb(userId) {
   const res = await fetch('http://localhost:8080/getWeather', {
     method: 'POST',
@@ -235,6 +236,7 @@ async function getWeatherSettingsFromDb(userId) {
   const data = await res.json()
   return data
 }
+
 
 
 /* ----------------------------------
@@ -253,7 +255,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadFavoriteTeams();
   loadLocalWeather();
   loadNextGamesWeather();
-  getFavoriloadSettingseTeams();
+  loadSettings();
 
   document
     .getElementById("save-settings-btn")
