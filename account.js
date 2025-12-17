@@ -152,8 +152,8 @@ async function getWeatherSettingsFromDb(userId) {
    LOGOUT
 -------------------------------------*/
 document.getElementById("logout-btn").addEventListener("click", () => {
-  localStorage.removeItem("userId");
-  localStorage.removeItem("userFavs");
-  localStorage.removeItem("weatherSettings");
+  document.cookie =  'userId' + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  document.cookie = 'userFavs'+ '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+  document.cookie = 'weatherSettings' + + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
   window.location.href = "logIn.html";
 });
