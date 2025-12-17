@@ -1,4 +1,4 @@
-import { getTodayWeather, getWeatherForCoords } from "./weatherHelper.js";
+import { getTodayWeather } from "./weatherHelper.js";
 import { getNextGame } from "./sportsHelper.js";
 
 /* ----------------------------------
@@ -170,14 +170,11 @@ async function loadNextGamesWeather() {
 -------------------------------------*/
 async function saveSettings() {
   const userId = getCookie("userId");
-  if (!userId) return alert("Not logged in!");
-
-  const forecastDays = document.getElementById("forecast-days").value;
+  if (!userId) return;
 
   const weatherSettings = {
-
-    "7-day": forecastDays === "7" ? 1 : 0,
-    "10-day": forecastDays === "10" ? 1 : 0,
+    "7-day": document.getElementById("forecast-days").value === "7" ? 1 : 0,
+    "10-day": document.getElementById("forecast-days").value === "10" ? 1 : 0,
     WindDirection: document.getElementById("show-wind-Direction").checked ? 1 : 0,
     WindSpeed: document.getElementById("show-wind-Speed").checked ? 1 : 0,
     Icons: document.getElementById("show-icon").checked ? 1 : 0,
@@ -185,44 +182,58 @@ async function saveSettings() {
   };
 
   try {
-    const res = await fetch("http://localhost:8080/weather", {
+    const res = await fetch("http://localhost:8080/weatherSave", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ weatherSettings, userId })
     });
 
-    if (!res.ok) throw new Error();
-    alert("Settings saved!");
-  } catch (err) {
-    console.error(err);
-    alert("Failed to save settings");
+    const data = await res.json()
+    if (res.ok) {
+      console.log(data);
+    }
+  } catch {
+
   }
 }
+
 
 /* ----------------------------------
    Load weather settings
 -------------------------------------*/
-async function loadSettings() {
-  const userId = getCookie("userId");
-  if (!userId) return;
+async function getFavoriloadSettingseTeams() {
+  var userId = getCookie('userId')
+  var favs = getCookie('weatherSetting')
+  var favArray = []
+  // user doesnt have a favorite list
+  if (favs != null && favs != '') {
+    const parsed = JSON.parse(favs);
+    // ensure it is an array
+    if (Array.isArray(parsed)) {
+      favArray.push(...parsed); // safe to spread
+    } else if (parsed) {
+      favArray.push(parsed); // single object, just push it
+    }
+  } else {
 
-  try {
-    const res = await fetch(`/weather?userID=${userId}`);
-    const settings = await res.json();
-    if (!settings) return;
+    var result = await getWeatherSettingsFromDb(userId)
 
-    document.getElementById("show-icon").checked = settings.Icons === 1;
-    document.getElementById("show-wind-Direction").checked = settings.WindDirection === 1;
-    document.getElementById("show-wind-Speed").checked = settings.WindSpeed === 1;
+    if (result?.userFavs?.length) {
+      favArray = result.userFavs.map(team => JSON.parse(team))
+    }
 
-    document.getElementById("forecast-days").value =
-      settings["7-day"] === 1 ? "7" : "10";
-
-    document.getElementById("temperature-unit").value =
-      settings.Celcius === 1 ? "celcius" : "Fahrenheit";
-  } catch (err) {
-    console.error("Failed to load settings", err);
   }
+  return favArray
+}
+async function getWeatherSettingsFromDb(userId) {
+  const res = await fetch('http://localhost:8080/getWeather', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ userId })
+  })
+  const data = await res.json()
+  return data
 }
 
 
@@ -242,7 +253,7 @@ window.addEventListener("DOMContentLoaded", () => {
   loadFavoriteTeams();
   loadLocalWeather();
   loadNextGamesWeather();
-  loadSettings();
+  getFavoriloadSettingseTeams();
 
   document
     .getElementById("save-settings-btn")
