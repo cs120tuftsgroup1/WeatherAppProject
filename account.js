@@ -1,6 +1,14 @@
 import { getTodayWeather } from "./weatherHelper.js";
 import { getNextGame } from "./sportsHelper.js";
 
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  if (getCookie("userId") == null) {
+    window.location.href = "logIn.html";
+  }
+});
+
 /* ----------------------------------
    GET COOKIES
 -------------------------------------*/
@@ -243,8 +251,10 @@ async function getWeatherSettingsFromDb(userId) {
    LOGOUT
 -------------------------------------*/
 document.getElementById("logout-btn").addEventListener("click", () => {
-  localStorage.removeItem("user");
-  window.location.href = "login.html";
+  localStorage.removeItem("userId");
+  localStorage.removeItem("userFavs");
+  localStorage.removeItem("weatherSettings");
+  window.location.href = "logIn.html";
 });
 
 /* ----------------------------------
