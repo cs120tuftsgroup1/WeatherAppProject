@@ -182,7 +182,7 @@ async function saveSettings() {
   };
 
   try {
-    const res = await fetch("http://localhost:8080/weatherSave", {
+    const res = await fetch("https://truesky-993c654d7f65.herokuapp.com/weatherSave", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ weatherSettings, userId })
@@ -201,11 +201,12 @@ async function saveSettings() {
 -------------------------------------*/
 async function loadSettings() {
   var userId = getCookie('userId')
-  var favs = getCookie('weatherSettings')
+  var settings = getCookie('weatherSettings')
+ 
   var weatherSettingsArray = []
   // user doesnt have a favorite list
-  if (favs != null && favs != '') {
-    const parsed = JSON.parse(favs);
+  if (settings != null && settings != '') {
+    const parsed = JSON.parse(settings);
     // ensure it is an array
     if (Array.isArray(parsed)) {
       weatherSettingsArray.push(...parsed); // safe to spread
@@ -227,7 +228,7 @@ async function loadSettings() {
 
 
 async function getWeatherSettingsFromDb(userId) {
-  const res = await fetch('http://localhost:8080/getWeather', {
+  const res = await fetch('https://truesky-993c654d7f65.herokuapp.com/getWeather', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',

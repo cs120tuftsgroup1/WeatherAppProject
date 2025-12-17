@@ -1,3 +1,8 @@
+let forecastDays = false;
+let direction = false;
+let wind = false;
+let showIcons = false;
+let temp = false;
 const weatherBtn = document.querySelector("#get-weather-button");
 
 function getCookie(name) {
@@ -6,29 +11,33 @@ function getCookie(name) {
   if (parts.length === 2) return parts.pop().split(';').shift();
   return null;
 }
-function getSettings() {
-  return {
-    temp: getCookie("Celcius") === "1" ? "C" : "F",
-    wind: getCookie("WindSpeed") === "1",
-    direction: getCookie("WindDirection") === "1",
-    showIcons: getCookie("Icons") === "1",
-    forecastDays: getCookie("7-day") === "1" ? 7 : (getCookie("10-day") === "1" ? 10 : 7),
-  };
-}
-
 
 if (weatherBtn) {
   weatherBtn.addEventListener("click", getWeather);
 }
 
 function getWeather() {
-  const { temp, wind, direction, showIcons, forecastDays } = getSettings();
+  
 
+const cookieValue = getCookie('weatherSettings'); 
 
-  console.log(temp)
-  console.log(wind)
-  console.log(direction)
+if (cookieValue) {
+      try {
+          const settings = JSON.parse(cookieValue);
 
+          forecastDays = Number(settings['10-day']) === 1 ? 10 : Number(settings['10-day']) || 7;
+          direction = settings.WindDirection;
+          wind = settings.WindSpeed;
+          showIcons = settings.Icons;
+          temp = (settings.Celcius ? "C" : "F");
+
+      } catch (e) {
+          console.error('Failed to parse cookie JSON:', e);
+      }
+  } else {
+      console.log('Cookie not found');
+  }
+console.log(forecastDays, direction, wind, showIcons, temp);
   const city = document.getElementById('city').value.trim();
   const country = document.getElementById('country').value;
 
@@ -121,7 +130,7 @@ function getWeather() {
                     </div>
                 </div>
 
-                <h3 class="forecast-title">7-Day Forecast</h3>
+                <h3 class="forecast-title">Forecast</h3>
                 <div class="forecast-grid">
             `;
 

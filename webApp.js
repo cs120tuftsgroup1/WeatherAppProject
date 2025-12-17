@@ -274,10 +274,10 @@ async function startServer() {
         req.on('end', async () => {
           try {
             const { userId } = JSON.parse(body);
-            const favs = await getWeatherFromDb(userId);
+            const settings = await getWeatherFromDb(userId);
 
             const weatherSettings = [
-              `weatherSettings=${favs || []}`,
+              `weatherSettings=${settings || []}`,
               'SameSite=Strict',
               'Path=/',
               'Max-Age=86400'
@@ -289,7 +289,7 @@ async function startServer() {
             });
 
             res.end(JSON.stringify({
-              weatherSettings: favs || []
+              weatherSettings: settings || []
             }));
           } catch (e) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -513,6 +513,7 @@ async function getWeatherFromDb(userId) {
     throw err;
   }
 }
+
 
 startServer();
 
