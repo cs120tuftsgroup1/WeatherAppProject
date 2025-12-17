@@ -28,60 +28,7 @@ function loadProfile() {
   document.getElementById("email").textContent = user.email || "Not set";
 }
 
-/* ----------------------------------
-   FAVORITE TEAMS EDITOR
--------------------------------------*/
-function loadFavoriteTeams() {
-  const favList = document.getElementById("favorite-teams");
-  favList.innerHTML = "";
 
-  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
-
-  if (!teams.length) {
-    favList.innerHTML = "<li>No favorite teams saved.</li>";
-    return;
-  }
-
-  teams.forEach((team, index) => {
-    const li = document.createElement("li");
-    li.textContent = team;
-
-    const removeBtn = document.createElement("button");
-    removeBtn.textContent = "×";
-    removeBtn.className = "remove-team-btn";
-    removeBtn.onclick = () => removeTeam(index);
-
-    li.appendChild(removeBtn);
-    favList.appendChild(li);
-  });
-}
-
-function addTeam() {
-  const input = document.getElementById("team-input");
-  const newTeam = input.value.trim();
-
-  if (!newTeam) return;
-
-  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
-  teams.push(newTeam);
-
-  localStorage.setItem("favoriteTeams", JSON.stringify(teams));
-
-  input.value = "";
-  loadFavoriteTeams();
-  loadNextGamesWeather();
-}
-
-function removeTeam(index) {
-  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
-  teams.splice(index, 1);
-  localStorage.setItem("favoriteTeams", JSON.stringify(teams));
-
-  loadFavoriteTeams();
-  loadNextGamesWeather();
-}
-
-document.getElementById("add-team-btn").addEventListener("click", addTeam);
 
 /* ----------------------------------
    AUTO-DETECT LOCATION WEATHER
@@ -124,53 +71,6 @@ function updateWeatherBox(weather) {
       </div>
     </div>
   `;
-}
-
-/* ----------------------------------
-   NEXT GAME FORECAST SECTION
--------------------------------------*/
-async function loadNextGamesWeather() {
-  const container = document.getElementById("next-games-container");
-  container.innerHTML = "Loading...";
-
-  const teams = JSON.parse(localStorage.getItem("favoriteTeams")) || [];
-
-  if (!teams.length) {
-    container.innerHTML = "<p>No favorite teams saved.</p>";
-    return;
-  }
-
-  container.innerHTML = ""; // clear
-
-  for (let team of teams) {
-    const game = await getNextGame(team);
-
-    if (!game) {
-      container.innerHTML += `<p>No upcoming game found for ${team}.</p>`;
-      continue;
-    }
-
-    const weather = await getWeatherForCoords(
-      game.latitude,
-      game.longitude
-    );
-
-    container.innerHTML += `
-      <div class="game-card">
-        <h3>${team} — Next Game</h3>
-        <p><strong>${game.opponent}</strong></p>
-        <p>${game.location}</p>
-        <p>${new Date(game.date).toLocaleString()}</p>
-        <div class="weather-widget">
-          <img src="${weather.icon}" class="weather-icon">
-          <div>
-            ${weather.temperature}°F — ${weather.description}<br>
-            Wind: ${weather.wind} mph
-          </div>
-        </div>
-      </div>
-    `;
-  }
 }
 
 /* ----------------------------------
