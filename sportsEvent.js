@@ -356,12 +356,13 @@ document.getElementById('getFavorites-btn').addEventListener('click', async func
     var eventsContainer = document.getElementById('events-container')
       eventsContainer.innerHTML = '' // Clear previous results
       var sportsData = [];
-    var userFavs =getCookie('userFavs');
+    var userFavs = getCookie('userFavs');
+    var userId = getCookie('userId')
     // Check if the user has the userFav cookie already saved.
     if( userFavs === '')
     {   
       //Check if they have any saved favorites in the database
-      if(await getFavoriteTeamsFromDb().length == 0)
+      if(await getFavoriteTeamsFromDb(userId).length == 0)
       {
             var eventsContainer = document.getElementById('events-container');
             eventsContainer.innerHTML = `<h2> You have no Favorite Teams </h2>`
