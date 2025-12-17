@@ -9,17 +9,10 @@
 
 /* ==== Background ==== */
 body {
-  background: linear-gradient(
-      135deg,
-      rgba(75,179,253,0.30),
-      rgba(64,201,162,0.30)
-  ), var(--white);
 
   font-family: "Inter", sans-serif;
   margin: 0;
   padding: 0;
-  min-height: 100vh;
-
   display: flex;
   justify-content: center;
   align-items: center;

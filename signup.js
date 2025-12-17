@@ -6,7 +6,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   const password = e.target.password.value;
 
   //
-  const res = await fetch('http://localhost:8080/signUp', {
+  const res = await fetch('https://truesky-993c654d7f65.herokuapp.com/signUp', {
     method: "POST",
     headers: {"Content-Type": "application/json"},
     credentials: 'include',
