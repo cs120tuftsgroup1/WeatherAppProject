@@ -5,7 +5,10 @@ body {
     height: 100%;
     z-index: 0;
     font-family:  Helvetica, sans-serif;
+    background-color: #E5F9E0;
 }
+
+
 
 body {
     display: flex;
@@ -30,15 +33,18 @@ footer {
     padding-left: 10px;
     display: flex;
     text-decoration: none;
-
+    padding-left:0px;
+    height: 100px;
 }
 
 .nav-links {
+    margin-left:10px  !important;
     padding-left: 5px;
     list-style: none;
     display: flex;
     margin: 0;
     padding: 0;
+    height:100px;
 }
 
 .nav-item {
@@ -50,8 +56,10 @@ footer {
 }
 
 .logo {
+    margin-left:0px;
     float: left;
     width: auto;
+    height: auto;
 }
 
 li {
@@ -87,6 +95,7 @@ li {
 }
 
 .event {
+    background-color:#ffffff;
     border: 1px solid #000;
     border-radius: 5px;
     padding: 10px;
@@ -199,7 +208,6 @@ li {
     margin-bottom: 30px;
 }
 
-
 .day {
     background: linear-gradient(135deg, #e3f2fd, #ffffff);
     border-radius: 12px;
@@ -257,15 +265,16 @@ header.site-logo .logo {
     box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
     z-index: 100;
     font-family:  Helvetica, sans-serif;
-
-
 }
 
 .weather-content
 {
-    width:400px;
+    width:250px;
 }
 .fav-content{
+    justify-content: center;
+    align-items: center;
+
     width:400px;
 }
 .weather-title{
