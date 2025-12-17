@@ -146,7 +146,11 @@ async function getWeatherSettingsFromDb(userId) {
   return data
 }
 
-
+window.addEventListener("DOMContentLoaded", () => {
+  document
+    .getElementById("save-settings-btn")
+    .addEventListener("click", saveSettings);
+});
 
 /* ----------------------------------
    LOGOUT
