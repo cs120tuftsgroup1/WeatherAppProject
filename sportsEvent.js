@@ -307,7 +307,7 @@ async function getFavoriteTeams () {
 }
 
 async function insertNewFavTeam (teamInfo, userId) {
-  const res = await fetch('http://localhost:8080/newFav', {
+  const res = await fetch('https://truesky-993c654d7f65.herokuapp.com/newFav', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -322,7 +322,7 @@ async function insertNewFavTeam (teamInfo, userId) {
 }
 
 async function updateFavoriteTeams (userFavs, userId) {
-  const res = await fetch('http://localhost:8080/updateFav', {
+  const res = await fetch('https://truesky-993c654d7f65.herokuapp.com/updateFav', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -336,7 +336,7 @@ async function updateFavoriteTeams (userFavs, userId) {
   }
 }
 async function getFavoriteTeamsFromDb (userId) {
-  const res = await fetch('http://localhost:8080/getFav', {
+  const res = await fetch('https://truesky-993c654d7f65.herokuapp.com/getFav', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
