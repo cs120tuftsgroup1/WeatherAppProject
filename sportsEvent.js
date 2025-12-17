@@ -358,7 +358,7 @@ document.getElementById('getFavorites-btn').addEventListener('click', async func
       var sportsData = [];
     var userFavs =getCookie('userFavs');
     // Check if the user has the userFav cookie already saved.
-    if( userFavs == null)
+    if( userFavs === '')
     {   
       //Check if they have any saved favorites in the database
       if(await getFavoriteTeamsFromDb().length == 0)
