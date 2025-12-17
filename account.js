@@ -157,18 +157,3 @@ document.getElementById("logout-btn").addEventListener("click", () => {
   localStorage.removeItem("weatherSettings");
   window.location.href = "logIn.html";
 });
-
-/* ----------------------------------
-   INITIAL PAGE LOAD
--------------------------------------*/
-window.addEventListener("DOMContentLoaded", () => {
-  loadProfile();
-  loadFavoriteTeams();
-  loadLocalWeather();
-  loadNextGamesWeather();
-  loadSettings();
-
-  document
-    .getElementById("save-settings-btn")
-    .addEventListener("click", saveSettings);
-});
