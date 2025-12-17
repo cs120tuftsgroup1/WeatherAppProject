@@ -225,58 +225,77 @@ async function startServer() {
         });
       }
 
+      else if (path === '/weatherSave' && req.method === 'POST') {
 
+        let body = '';
+        req.on('data', chunk => body += chunk.toString());
 
+        req.on('end', async () => {
+          const settings = { weatherSettings, userId } = JSON.parse(body);
+
+          try {
+            if (saveWeather(settings, userId)) {
+
+              const settingsCookies = [
+                `weatherSettings= ${JSON.stringify(settings.weatherSettings)}`,
+                'SameSite=Strict',
+                'Path=/',
+                'Max-Age=86400'
+              ].join('; ');
+              res.writeHead(200, {
+                'Content-Type': 'application/json',
+                'Set-Cookie': settingsCookies
+              });
+              res.end(JSON.stringify({
+                success: true
+              }));
+            }
+            else {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                success: false
+              }));
+            }
+
+          } catch (err) {
+            console.log(err)
+          }
+        });
+      }
 
       /* ----------------------------------
-         Save weather settings
+               load weather settings
       -------------------------------------*/
-
-
-      else if (path === '/weather' && req.method === 'POST') {
+      else if (path === '/getWeather' && req.method === 'POST') {
         let body = '';
-        const userWeatherUpdate = { weatherSettings, userId } = JSON.parse(body);
 
         req.on('data', chunk => body += chunk.toString());
 
         req.on('end', async () => {
           try {
+            const { userId } = JSON.parse(body);
+            const settings = await getWeatherFromDb(userId);
 
-            saveWeather(userWeatherUpdate);
+            const weatherSettings = [
+              `weatherSettings=${settings || []}`,
+              'SameSite=Strict',
+              'Path=/',
+              'Max-Age=86400'
+            ].join('; ');
 
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true }));
-          } catch (err) {
+            res.writeHead(200, {
+              'Content-Type': 'application/json',
+              'Set-Cookie': weatherSettings
+            });
+
+            res.end(JSON.stringify({
+              weatherSettings: settings || []
+            }));
+          } catch (e) {
             res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false }));
+            res.end(JSON.stringify({ error: 'Server error' }));
           }
         });
-      }
-
-
-
-      /* ----------------------------------
-         Save weather settings
-      -------------------------------------*/
-
-      /* ----------------------------------
-               load weather settings
-            -------------------------------------*/
-      else if (path === '/weather' && req.method === 'GET') {
-        const userID = urlObj.query.userID;
-
-        try {
-          const db = client.db("weatherApp");
-          const collection = db.collection("userSettings");
-
-          //const settings = await collection.findOne({ userID });
-
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(settings));
-        } catch (err) {
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(null));
-        }
       }
 
       /* ---------- STATIC FILES ---------- */
@@ -456,31 +475,45 @@ async function insertNewFavDb(teamInfo, userId) {
     throw err; // Let the caller handle it
   }
 
-} async function saveWeather(userSettings) {
-  // Get database
+}
+
+async function saveWeather({ weatherSettings, userId }) {
   try {
+    const db = client.db("weatherApp");
+    const collection = db.collection("weatherSettings");
+
+    const userIdObject = new ObjectId(userId);
+
+    // Update if exists, insert if not
+    const result = await collection.updateOne(
+      { userId: userIdObject },
+      { $set: { settings: weatherSettings } },
+      { upsert: true } // insert if not exists
+    );
+
+    return result.acknowledged === true;
+  } catch (e) {
+    console.error("Error saving weather settings:", e);
+    return false;
+  }
+}
+
+async function getWeatherFromDb(userId) {
+  try {
+
     var db = client.db("weatherApp");
 
-    // Get collection 
     var collection = db.collection("weatherSettings");
 
-    var userIdObject = new Object(userSettings.userId)
-    //  Construct query
-    var query = { userID: userIdObject, settings: userSettings.weatherSettings };
-
-    collection.insertOne;
-
-    // Run the query 
+    var query = { userID: new ObjectId(userId) };
     var result = await collection.findOne(query);
-
-    // If result is null then the user does not exist.
-    return result;
+    return result?.favorites || [];
+  } catch (err) {
+    console.error("Error fetching weather settings:", err);
+    throw err;
   }
-  catch (e) {
-    console.log(e)
-    throw (e);
-  }
-
 }
+
+
 startServer();
 
