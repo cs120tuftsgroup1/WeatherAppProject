@@ -18,7 +18,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   else
   {
     alert("Signup successful!");
-    const loginRes = await fetch('http://localhost:8080/logMeIn', {
+    const loginRes = await fetch('https://truesky-993c654d7f65.herokuapp.com/logMeIn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
