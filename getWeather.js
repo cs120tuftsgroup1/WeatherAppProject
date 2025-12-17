@@ -177,7 +177,7 @@ export function degreesToCompass(deg) {
 window.onload = function () {
   const name = getCookie("userId");
   if (!name) {
-    window.location.href = "login.html";
+    window.location.href = "logIn.html";
   } 
 };
 
